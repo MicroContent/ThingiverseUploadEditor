@@ -12,7 +12,7 @@
         body {
             background-color: whitesmoke;
             border-bottom: 0 solid black;
-            height: 450px;
+            height: 30em;
             display: flex;
             justify-content:center;
             align-items: center;
@@ -24,33 +24,33 @@
             justify-content: center;
         }
         .wrapper {
-            margin: 30px;
-            padding: 10px;
-            box-shadow: 0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22);
-            border-radius: 10px;
+            margin: 10em;
+            padding: 0.5em;
+            box-shadow: 0 1em 2em rgba(0,0,0,0.30), 0 0.6em 0.5em rgba(0,0,0,0.22);
+            border-radius: 0.5em;
             background-color: white;
-            width: 415px;
-            max-height: 400px;
+            width: 30em;
+            max-height: 25em;
             overflow: auto;
         }
 
         /* === Upload Box === */
         .upload {
-            margin: 10px;
+            margin: 0.5em;
             height: auto;
-            border: 8px dashed #EDEDED;
+            border: 0.5em dashed #EDEDED;
             display: flex;
             justify-content: center;
             align-items: center;
-            border-radius: 5px;
+            border-radius: 0.3em;
         }
 
         .upload p {
-            margin-top: 12px;
+            margin-top: 0.5em;
             line-height: 0;
-            font-size: 22px;
+            font-size: 1.3rem;
             color: #0c3214;
-            letter-spacing: 1.5px;
+            letter-spacing: 0.1em;
         }
 
         .break {
@@ -58,12 +58,12 @@
             height: 0;
         }
         .upload-button {
-            height: 2em;
+            height: 2.3em;
             background-color: #EDEDED;
-            box-shadow: 0 5px 10px rgba(0,0,0,0.22);
+            box-shadow: 0 0.3em 0.5em rgba(0,0,0,0.22);
             border: 0;
-            border-radius: 10px;
-            padding: 0px 8px 0px 10px;
+            border-radius: 0.5em;
+            padding: 0 0.3em 0 0.5em;
         }
         .upload-button:hover {
             cursor: pointer;
@@ -72,11 +72,11 @@
 
         /* === Uploaded Files === */
         .uploaded {
-            width: 375px;
-            margin: 10px;
-            padding: 10px;
+            width: 96%;
+            margin: 0.5em;
+            padding: 0.5em;
             background-color: #EDEDED;
-            border-radius: 10px;
+            border-radius: 0.5em;
             display: flex;
             flex-direction: row;
             justify-content: flex-start;
@@ -91,23 +91,23 @@
             flex-direction: row;
             justify-content: space-between;
             align-items: baseline;
-            width: 300px;
+            width: 19em;
             line-height: 0;
             color: #0c3214;
-            font-size: 18px;
-            letter-spacing: 1.5px;
+            font-size: 1.1rem;
+            letter-spacing: 0.1em;
         }
         .fa-times:hover {
             cursor: pointer;
             opacity: 0.8;
         }
         .fa-file {
-            padding: 15px;
-            font-size: 40px;
+            padding: 0.3em;
+            font-size: 1em;
             color: #0c3214;
         }
         .error {
-            margin: 10px;
+            margin: 0.5em;
             color: red;
         }
 
@@ -171,6 +171,7 @@
 </div>
 
 
+<!-- == Plugin Logic == -->
 <script>
 
     function openFileExplorer() {
@@ -196,7 +197,7 @@
     });
 
     function uploadFiles(files) {
-        if (!validate()){
+        if (!validate(files)){
             return;
         }
 
@@ -207,7 +208,7 @@
         // todo upload depending on file type
     }
 
-    function validate() {
+    function validate(files) {
         const errorMsg = document.getElementById('errorMaxFile');
         if (files.length > 10) {
             errorMsg.innerText = "You can only upload a maximum of 10 files!";
@@ -240,7 +241,7 @@
         let fullName = file.name;
         let split = fullName.split('.');
         let extension = split[split.length-1];
-        let shortenedName = split[0].substring(0, 9);
+        let shortenedName = split[0].substring(0, 11);
 
         let divUploaded = document.createElement('div');
         divUploaded.classList.add('uploaded')
