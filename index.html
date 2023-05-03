@@ -12,27 +12,32 @@
         body {
             background-color: whitesmoke;
             border-bottom: 0 solid black;
-            height: 30em;
+            height: 35em;
             display: flex;
             justify-content:center;
             align-items: center;
         }
 
         /* === Wrapper Styles === */
+        .container {
+            margin: 10em;
+        }
+
         #FileUpload {
-            display: flex;
             justify-content: center;
         }
+
         .wrapper {
-            margin: 10em;
             padding: 0.5em;
             box-shadow: 0 1em 2em rgba(0,0,0,0.30), 0 0.6em 0.5em rgba(0,0,0,0.22);
             border-radius: 0.5em;
             background-color: white;
             width: 30em;
-            max-height: 25em;
+            max-height: 22em;
             overflow: auto;
+            margin-bottom: 1em;
         }
+
 
         /* === Upload Box === */
         .upload {
@@ -57,6 +62,7 @@
             flex-basis: 100%;
             height: 0;
         }
+
         .upload-button {
             height: 2.3em;
             background-color: #EDEDED;
@@ -84,6 +90,7 @@
         }
         .file {
             display: flex;
+            width: 100%;
             flex-direction: column;
         }
         .file-name {
@@ -91,7 +98,7 @@
             flex-direction: row;
             justify-content: space-between;
             align-items: baseline;
-            width: 19em;
+            width: 95%;
             line-height: 0;
             color: #0c3214;
             font-size: 1.1rem;
@@ -113,6 +120,11 @@
 
         #selectFile {
             display: none;
+        }
+
+        .btn {
+            width: 4em;
+            float: right;
         }
 
 
@@ -141,7 +153,7 @@
         if (event) {
             event.preventDefault();
         }
-        const data = "test"; // todo data getter
+        const data = dataGetter();
         parent.send(data);
         updateLayout();
     }
@@ -151,11 +163,31 @@
             type: 'updateLayout'
         });
     }
+
+    function dataGetter() { // todo
+        const title = document.getElementById('inputTitle')
+
+        return {
+            type: 'updateData',
+            title: title,
+            mediaUrlArray: "fileUrl"
+        }
+    }
+
+    function setContent(data) {
+
+    }
+
 </script>
 
 
 <!-- UI -->
-<div>
+<div class="container">
+    <div class="wrapper title form-group">
+        <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="titleHelp" placeholder="Title" type="text">
+        <small id="titleHelp">Enter a title (max. 60 characters)</small>
+    </div>
+
     <div id="FileUpload">
         <div class="wrapper">
             <div class="upload" id="uploadZone">
@@ -168,11 +200,35 @@
 
         </div>
     </div>
+
+    <button type="button" class="btn btn-success" onclick="sendToParent(event)">OK</button>
 </div>
 
 
 <!-- == Plugin Logic == -->
 <script>
+
+    /* === Event Listeners on UI === */
+
+    document.getElementById('inputTitle').addEventListener('change', (e) => {
+        title = e.target.value;
+    })
+
+    document.getElementById('uploadZone').addEventListener('drop', (e) => {
+        e.preventDefault();
+        let files = e.dataTransfer.files;
+        uploadFiles(files);
+    });
+
+    document.getElementById('uploadZone').addEventListener('dragover', (e) => {
+        e.preventDefault();
+        document.getElementById('uploadZone').style.borderColor = '#A9A9A9';
+    });
+
+    document.getElementById('uploadZone').addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        document.getElementById('uploadZone').style.borderColor = '#EDEDED';
+    });
 
     function openFileExplorer() {
         document.getElementById('selectFile').click();
@@ -182,19 +238,10 @@
         };
     }
 
-    document.getElementById('uploadZone').addEventListener('drop', (e) => {
-        e.preventDefault();
-        let files = e.dataTransfer.files;
-        uploadFiles(files);
-    });
-    document.getElementById('uploadZone').addEventListener('dragover', (e) => {
-        e.preventDefault();
-        document.getElementById('uploadZone').style.borderColor = '#A9A9A9';
-    });
-    document.getElementById('uploadZone').addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        document.getElementById('uploadZone').style.borderColor = '#EDEDED';
-    });
+    function removeFile(id, filename){
+        document.getElementById(id).remove();
+        fileList = fileList.filter(file => file.name !== filename);
+    }
 
     function uploadFiles(files) {
         if (!validate(files)){
@@ -202,6 +249,7 @@
         }
 
         for (const file of files) {
+            fileList.push(file);
             renderUploadItem(file);
         }
 
@@ -222,26 +270,25 @@
     /**
      * Renders HTML elements for a given file
      * @example
-     *      <div class="uploaded">
-                <i class="far fa-file"></i>
-                <div class="file">
-                    <div class="file-name">
-                        <p>amet_consectetur.pdf</p>
-                        <i class="fas fa-times"></i>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width:60%"></div>
-                    </div>
-                </div>
-                <p class="error"><p>
-            </div>
+     *  <div class="uploaded uploaded--one">
+     *      <i class="far fa-file-pdf"></i>
+     *      <div class="file">
+     *          <div class="file__name">
+     *              <p>lorem_ipsum.pdf</p>
+     *              <i class="fas fa-times"></i>
+     *          </div>
+     *          <div class="progress">
+     *              <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" style="width:100%"></div>
+     *          </div>
+     *      </div>
+     *  </div>
      */
     function renderUploadItem(file){
         // todo error handling if file undefined or smth
         let fullName = file.name;
         let split = fullName.split('.');
         let extension = split[split.length-1];
-        let shortenedName = split[0].substring(0, 11);
+        let shortenedName = split[0].substring(0, 13);
 
         let divUploaded = document.createElement('div');
         divUploaded.classList.add('uploaded')
@@ -249,7 +296,6 @@
 
         let icon = document.createElement('i');
         icon.classList.add('far', 'fa-file');
-
         let divFile = document.createElement('div');
         divFile.classList.add('file');
         let divFileName = document.createElement('div');
@@ -259,6 +305,8 @@
         let iconClose = document.createElement('i');
         iconClose.id = 'icon-close-'+fullName;
         iconClose.classList.add('fas', 'fa-times');
+        iconClose.onclick = () => removeFile(divUploaded.id, fullName);
+
         divFileName.append(pName, iconClose)
 
         let divProgress = document.createElement('div');
@@ -278,6 +326,9 @@
 
         document.getElementById('divUploadItems').append(divUploaded);
     }
+
+    let fileList = [];
+    let title = "";
 
 </script>
 
