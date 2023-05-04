@@ -134,7 +134,7 @@
         }
 
         .btn {
-            width: 4em;
+            width: 6em;
             float: right;
         }
 
@@ -223,7 +223,7 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-success" onclick="uploadFiles(fileList)">OK</button>
+    <button type="button" class="btn btn-success" onclick="uploadFiles(fileList)">Upload</button>
 </div>
 
 
@@ -343,7 +343,7 @@
             for (const file of files) {
                 const awsInfo = informThingiversePreUpload(file, itemId);
                 if (awsInfo){
-                    createFileAws(awsInfo);
+                    createFileAws(awsInfo, file);
                 }
             }
         }
@@ -425,7 +425,7 @@
      * @param awsInfo Metadata needed to access the AWS bucket
      * @param file File object that should be uploaded
      */
-    function createFileAws(awsInfo, file){
+    async function createFileAws(awsInfo, file){
         const url = awsInfo.action.substring(0, awsInfo.action.length-1);
 
         let formData = new FormData();
@@ -438,17 +438,25 @@
         formData.append('signature', awsInfo.fields.signature);
         formData.append('Content-Type', awsInfo.fields["Content-Type"]);
         formData.append('Content-Disposition', awsInfo.fields["Content-Disposition"]);
-        formData.append('file', fileList[0]);
+        formData.append('file', file);
 
         let xhr = new XMLHttpRequest();
         xhr.open('POST', url, true);
+        xhr.upload.onprogress = (evt) => {
+            if (evt.lengthComputable) {
+                console.log("sog amoi mochst du irgendwas?")
+                let percentComplete = parseInt((evt.loaded / file.size) * 100); //todo not wokring correctly (102 for some reason)
+                console.log(percentComplete)
+                document.getElementById(`progress-${file.name}`).style.width = percentComplete;
+            }
+        }
         xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
                 const resAws = JSON.parse(xhr.response);
                 console.log(resAws);
+                informThingiversePostUpload(awsInfo.fields.success_action_redirect);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
-                // todo: error always occurs - redirect to thingiverse unauthorized
                 console.log("Error occurred:");
                 console.log(xhr.response)
             }
@@ -458,6 +466,23 @@
     }
 
     // todo: inform thingiverse postupload how to get the fileId from the reponse?
+
+    function informThingiversePostUpload(redirectUrl){
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", redirectUrl, true);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.onload = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
+                const res = JSON.parse(xhr.response);
+                console.log(res);
+
+            } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
+                console.log("Error occurred:");
+                console.log(xhr.response)
+            }
+        }
+        xhr.send();
+    }
 
     /**
      * Renders HTML elements for a given file
@@ -504,7 +529,7 @@
         divProgress.classList.add('progress');
         let divProgressbar = document.createElement('div');
         divProgressbar.classList.add("progress-bar", "bg-success", "progress-bar-striped", "progress-bar-animated")
-        divProgressbar.style.width = "60%" // todo sets percentage
+        divProgressbar.style.width = "1%"
         divProgressbar.id = "progress-"+fullName;
         divProgress.appendChild(divProgressbar);
         let pError = document.createElement('p');
