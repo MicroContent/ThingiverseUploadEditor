@@ -201,7 +201,7 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-success" onclick="sendToParent(event)">OK</button>
+    <button type="button" class="btn btn-success" onclick="uploadFileThingiverse(undefined)">OK</button>
 </div>
 
 
@@ -267,6 +267,122 @@
         return true;
     }
 
+    function uploadFileThingiverse(file){
+
+        if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
+            console.log("Missing credentials");
+            return;
+        }
+
+        const baseUrl = "https://api.thingiverse.com"
+
+        // 1. Create Item
+        /*let xhrCreate = new XMLHttpRequest();
+        let itemId = "";
+
+        const item = {
+            "name": "test item3",
+            "category":"Art",
+            "tags":["foo","bar","baz"],
+            "description":"This is a test thing",
+            "instructions":"Print and enjoy",
+            "is_wip":true,
+            "license":"cc"
+        }
+        xhrCreate.open('POST', baseUrl+"/things", false);
+        xhrCreate.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhrCreate.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        //xhrCreate.responseType = 'json';
+
+        xhrCreate.onreadystatechange = () => {
+            if (xhrCreate.readyState === XMLHttpRequest.DONE && xhrCreate.status === 200) {
+                const response = JSON.parse(xhrCreate.response);
+                console.log(response);
+                itemId = response.id;
+                console.log(itemId);
+
+            } else if (xhrCreate.readyState === XMLHttpRequest.DONE && xhrCreate.status !== 200) {
+                console.log("oje");
+
+            }
+        }
+        xhrCreate.send(JSON.stringify(item))*/
+
+
+        // 2. Inform Thingiverse that you want to attach a file
+        let xhrAttach = new XMLHttpRequest();
+        //xhrAttach.open('POST', baseUrl+`/things/${itemId}/files`, false);
+        xhrAttach.open('POST', baseUrl+`/things/6005368/files`, false);
+        xhrAttach.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhrAttach.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        //xhrAttach.responseType = 'json';
+
+
+        xhrAttach.onreadystatechange = () => {
+            if (xhrAttach.readyState === XMLHttpRequest.DONE && xhrAttach.status === 200) {
+                const responseAwsInfo = JSON.parse(xhrAttach.response);
+                uploadFileAws(responseAwsInfo);
+
+            } else if (xhrAttach.readyState === XMLHttpRequest.DONE && xhrAttach.status !== 200) {
+                console.log("oje2");
+                console.log(xhrAttach.response)
+            }
+        }
+
+        const body = {
+            "filename": "hacker.png"
+        }
+        xhrAttach.send(JSON.stringify(body))
+    }
+
+    function uploadFileAws(awsInfo){
+        let xhr = new XMLHttpRequest();
+        //xhrAttach.open('POST', baseUrl+`/things/${itemId}/files`, false);
+        xhr.open('POST', awsInfo.action.substring(0, awsInfo.action.length-1), false);
+        xhr.setRequestHeader("Content-Type","multipart/form-data");
+
+        let formData = new FormData();
+        formData.append('AWSAccessKeyId', awsInfo.fields.AWSAccessKeyId);
+        formData.append('bucket', awsInfo.fields.bucket);
+        formData.append('key', awsInfo.fields.key);
+        formData.append('acl', awsInfo.fields.acl);
+        formData.append('success_action_redirect', awsInfo.fields.success_action_redirect);
+        formData.append('policy', awsInfo.fields.policy);
+        formData.append('signature', awsInfo.fields.signature);
+        formData.append('Content-Type', awsInfo.fields["Content-Type"]);
+        formData.append('Content-Disposition', awsInfo.fields["Content-Disposition"]);
+        formData.append('file', fileList[0]);
+
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                const resAws = JSON.parse(xhr.response);
+                console.log(resAws);
+
+            } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
+                console.log("Error occurred:");
+                console.log(xhr.response)
+            }
+        }
+
+        xhr.send(formData);
+
+    }
+
+    function authorizeThingiverse() {
+        if (!thingiverseCredentials
+            || !thingiverseCredentials.clientSecret
+            || !thingiverseCredentials.clientdId
+            || !thingiverseCredentials.appToken) {
+            console.log("Missing credentials");
+            return;
+        }
+
+        let ajax = new XMLHttpRequest();
+        const url = "https://api.thingiverse.com"
+
+
+    }
+
     /**
      * Renders HTML elements for a given file
      * @example
@@ -329,6 +445,18 @@
 
     let fileList = [];
     let title = "";
+
+    /**
+     * Contains credentials that can be used to access the Thingiverse Upload API
+     * @example
+     * {
+     *   clientId: "exampleId",
+     *   clientSecret: "exampleSecret",
+     *   appToken: "exampleToken"
+     * }*/
+    let thingiverseCredentials;
+
+    let thingiverseApiToken;
 
 </script>
 
