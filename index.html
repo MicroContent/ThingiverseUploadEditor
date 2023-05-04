@@ -277,7 +277,7 @@
         const baseUrl = "https://api.thingiverse.com"
 
         // 1. Create Item
-        /*let xhrCreate = new XMLHttpRequest();
+        let xhrCreate = new XMLHttpRequest();
         let itemId = "";
 
         const item = {
@@ -306,7 +306,7 @@
 
             }
         }
-        xhrCreate.send(JSON.stringify(item))*/
+        xhrCreate.send(JSON.stringify(item))
 
 
         // 2. Inform Thingiverse that you want to attach a file
@@ -324,7 +324,6 @@
                 uploadFileAws(responseAwsInfo);
 
             } else if (xhrAttach.readyState === XMLHttpRequest.DONE && xhrAttach.status !== 200) {
-                console.log("oje2");
                 console.log(xhrAttach.response)
             }
         }
@@ -339,7 +338,6 @@
         let xhr = new XMLHttpRequest();
         //xhrAttach.open('POST', baseUrl+`/things/${itemId}/files`, false);
         xhr.open('POST', awsInfo.action.substring(0, awsInfo.action.length-1), false);
-        xhr.setRequestHeader("Content-Type","multipart/form-data");
 
         let formData = new FormData();
         formData.append('AWSAccessKeyId', awsInfo.fields.AWSAccessKeyId);
