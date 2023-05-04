@@ -143,6 +143,7 @@
            case 'setContent':
                window.data = data.main[0];
                // todo set content
+               init(window.data);
                break;
            case 'getContent':
 
@@ -174,7 +175,7 @@
         }
     }
 
-    function setContent(data) {
+    function init(data) {
 
     }
 
@@ -201,7 +202,7 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-success" onclick="uploadFileThingiverse(undefined)">OK</button>
+    <button type="button" class="btn btn-success" onclick="uploadFiles(fileList)">OK</button>
 </div>
 
 
@@ -217,7 +218,7 @@
     document.getElementById('uploadZone').addEventListener('drop', (e) => {
         e.preventDefault();
         let files = e.dataTransfer.files;
-        uploadFiles(files);
+        addFiles(files);
     });
 
     document.getElementById('uploadZone').addEventListener('dragover', (e) => {
@@ -234,16 +235,11 @@
         document.getElementById('selectFile').click();
         document.getElementById('selectFile').onchange = function() {
             let files = document.getElementById('selectFile').files;
-            uploadFiles(files)
+            addFiles(files)
         };
     }
 
-    function removeFile(id, filename){
-        document.getElementById(id).remove();
-        fileList = fileList.filter(file => file.name !== filename);
-    }
-
-    function uploadFiles(files) {
+    function addFiles(files){
         if (!validate(files)){
             return;
         }
@@ -252,8 +248,11 @@
             fileList.push(file);
             renderUploadItem(file);
         }
+    }
 
-        // todo upload depending on file type
+    function removeFile(id, filename){
+        document.getElementById(id).remove();
+        fileList = fileList.filter(file => file.name !== filename);
     }
 
     function validate(files) {
@@ -267,21 +266,36 @@
         return true;
     }
 
-    function uploadFileThingiverse(file){
+    function uploadFiles(files) {
 
+        // todo upload depending on file type
+
+        const itemId = createThingiverseItem();
+
+        if (itemId) {
+            for (const file of files) {
+                const awsInfo = informThingiversePreUpload(file, itemId);
+                if (awsInfo){
+                    createFileAws(awsInfo);
+                }
+            }
+        }
+    }
+
+    /**
+     * Synchronous function to create a new item at Thingiverse
+     *
+     * @return {string|undefined}
+     */
+    function createThingiverseItem(){
         if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
             console.log("Missing credentials");
             return;
         }
 
-        const baseUrl = "https://api.thingiverse.com"
-
-        // 1. Create Item
-        let xhrCreate = new XMLHttpRequest();
-        let itemId = "";
-
-        const item = {
-            "name": "test item3",
+        const url = "https://api.thingiverse.com/things";
+        const item = { // todo
+            "name": "title",
             "category":"Art",
             "tags":["foo","bar","baz"],
             "description":"This is a test thing",
@@ -289,55 +303,62 @@
             "is_wip":true,
             "license":"cc"
         }
-        xhrCreate.open('POST', baseUrl+"/things", false);
-        xhrCreate.setRequestHeader("Content-Type","application/json; charset=utf-8");
-        xhrCreate.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
-        //xhrCreate.responseType = 'json';
 
-        xhrCreate.onreadystatechange = () => {
-            if (xhrCreate.readyState === XMLHttpRequest.DONE && xhrCreate.status === 200) {
-                const response = JSON.parse(xhrCreate.response);
-                console.log(response);
-                itemId = response.id;
-                console.log(itemId);
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', url, false);
+        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.send(JSON.stringify(item))
 
-            } else if (xhrCreate.readyState === XMLHttpRequest.DONE && xhrCreate.status !== 200) {
-                console.log("oje");
-
-            }
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            const response = JSON.parse(xhr.response);
+            console.log(response);
+            return response.id;
+        } else {
+            console.log("An issue occurred during the creation of the item");
+            console.log(xhr.response);
+            return undefined;
         }
-        xhrCreate.send(JSON.stringify(item))
-
-
-        // 2. Inform Thingiverse that you want to attach a file
-        let xhrAttach = new XMLHttpRequest();
-        //xhrAttach.open('POST', baseUrl+`/things/${itemId}/files`, false);
-        xhrAttach.open('POST', baseUrl+`/things/6005368/files`, false);
-        xhrAttach.setRequestHeader("Content-Type","application/json; charset=utf-8");
-        xhrAttach.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
-        //xhrAttach.responseType = 'json';
-
-
-        xhrAttach.onreadystatechange = () => {
-            if (xhrAttach.readyState === XMLHttpRequest.DONE && xhrAttach.status === 200) {
-                const responseAwsInfo = JSON.parse(xhrAttach.response);
-                uploadFileAws(responseAwsInfo);
-
-            } else if (xhrAttach.readyState === XMLHttpRequest.DONE && xhrAttach.status !== 200) {
-                console.log(xhrAttach.response)
-            }
-        }
-
-        const body = {
-            "filename": "hacker.png"
-        }
-        xhrAttach.send(JSON.stringify(body))
     }
 
-    function uploadFileAws(awsInfo){
+    /**
+     * Synchronous function to inform Thingiverse that you want to attach a file to an item.
+     * @param file File object that should be uploaded.
+     * @param itemId String which identifies the item to which the file should be attached.
+     *
+     * @return {any|undefined} aws info or undefined in case of error.
+     */
+    function informThingiversePreUpload(file, itemId){
+        if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
+            console.log("Missing credentials");
+            return;
+        }
+
+        const url = `https://api.thingiverse.com/things/${itemId}/files`;
+        const body = { "filename": file.name };
+
         let xhr = new XMLHttpRequest();
-        //xhrAttach.open('POST', baseUrl+`/things/${itemId}/files`, false);
-        xhr.open('POST', awsInfo.action.substring(0, awsInfo.action.length-1), false);
+        xhr.open('POST', url, false);
+        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.send(JSON.stringify(body));
+
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            return JSON.parse(xhr.response);
+        } else {
+            console.log("An issue occurred during file upload to AWS");
+            console.log(xhr.response);
+            return undefined;
+        }
+    }
+
+    /**
+     * Asynchronous function to upload a given file to the corresponding AWS Bucket.
+     * @param awsInfo
+     * @param file
+     */
+    function createFileAws(awsInfo, file){
+        const url = awsInfo.action.substring(0, awsInfo.action.length-1);
 
         let formData = new FormData();
         formData.append('AWSAccessKeyId', awsInfo.fields.AWSAccessKeyId);
@@ -351,6 +372,8 @@
         formData.append('Content-Disposition', awsInfo.fields["Content-Disposition"]);
         formData.append('file', fileList[0]);
 
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', url, true);
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
                 const resAws = JSON.parse(xhr.response);
@@ -363,10 +386,11 @@
         }
 
         xhr.send(formData);
-
     }
 
-    function authorizeThingiverse() {
+    // todo: inform thingiverse postupload
+
+    function authorizeThingiverse() { // todo needed?
         if (!thingiverseCredentials
             || !thingiverseCredentials.clientSecret
             || !thingiverseCredentials.clientdId
@@ -443,18 +467,8 @@
 
     let fileList = [];
     let title = "";
-
-    /**
-     * Contains credentials that can be used to access the Thingiverse Upload API
-     * @example
-     * {
-     *   clientId: "exampleId",
-     *   clientSecret: "exampleSecret",
-     *   appToken: "exampleToken"
-     * }*/
-    let thingiverseCredentials;
-
     let thingiverseApiToken;
+    init();
 
 </script>
 
