@@ -8,11 +8,11 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
     <style>
         body {
             background-color: whitesmoke;
             border-bottom: 0 solid black;
-            height: 35em;
             display: flex;
             justify-content:center;
             align-items: center;
@@ -20,7 +20,7 @@
 
         /* === Wrapper Styles === */
         .container {
-            margin: 10em;
+            margin: 3em 10em 3em 10em;
         }
 
         #FileUpload {
@@ -33,11 +33,20 @@
             border-radius: 0.5em;
             background-color: white;
             width: 30em;
-            max-height: 22em;
+            max-height: 25em;
             overflow: auto;
             margin-bottom: 1em;
         }
 
+        /* === Text Input Box === */
+        .title {
+            letter-spacing: 0.1em;
+            text-align: center;
+        }
+
+        .form-control {
+            margin-top: 0.5em;
+        }
 
         /* === Upload Box === */
         .upload {
@@ -45,6 +54,7 @@
             height: auto;
             border: 0.5em dashed #EDEDED;
             display: flex;
+            flex-flow: row wrap;
             justify-content: center;
             align-items: center;
             border-radius: 0.3em;
@@ -58,9 +68,10 @@
             letter-spacing: 0.1em;
         }
 
-        .break {
-            flex-basis: 100%;
-            height: 0;
+        .hint-formats {
+            text-align: center;
+            width: 80%;
+            margin-bottom: 0.5em;
         }
 
         .upload-button {
@@ -178,15 +189,23 @@
     function init(data) {
 
     }
-
 </script>
 
 
 <!-- UI -->
 <div class="container">
-    <div class="wrapper title form-group">
-        <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="titleHelp" placeholder="Title" type="text">
-        <small id="titleHelp">Enter a title (max. 60 characters)</small>
+    <div class="wrapper form-group">
+        <h3 class="title">Upload Files </h3><i class="bi bi-info-circle"></i>
+        <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title" type="text">
+        <small class="hint" id="helpTitle">Enter a title for the Thing (max. 60 characters)</small>
+
+        <textarea id="inputDescription" maxlength="200" rows="3"
+                  class="form-control"  aria-labelledby="helpDescription" placeholder="Description" type="text"></textarea>
+        <small class="hint" id="helpDescription">Add a text to describe the Thing you want to upload to Thingiverse</small>
+
+        <textarea id="inputInstructions" maxlength="200" rows="3"
+                  class="form-control"  aria-labelledby="helpInstructions" placeholder="Instructions" type="text"></textarea>
+        <small class="hint" id="helpInstructions">Add instructions to the Thing you want to upload to Thingiverse</small>
     </div>
 
     <div id="FileUpload">
@@ -194,11 +213,13 @@
             <div class="upload" id="uploadZone">
                 <p>Drag files here or <button class="upload-button" onclick="openFileExplorer()">Browse</button></p>
                 <input type="file" id="selectFile" multiple>
+                <small class="hint-formats">Allowed file formats:<br>stl, obj, thing, scad, amf, dae, 3ds, x3d, blend, ply, dxf, ai, cdr, ps, eps, epsi, sch, brd, jpg, png, gif, svg, txt, doc, docx, mp3, wav, mp4</small>
             </div>
             <div class="error" id="errorMaxFile" style="display: none"></div>
+            <div class="error" id="errorFileFormat" style="display: none"></div>
+            <p>No. of files: <strong id="nrFiles">0</strong> </p>
 
             <div id="divUploadItems"></div>
-
         </div>
     </div>
 
@@ -213,7 +234,15 @@
 
     document.getElementById('inputTitle').addEventListener('change', (e) => {
         title = e.target.value;
-    })
+    });
+
+    document.getElementById('inputDescription').addEventListener('change', (e) => {
+        description = e.target.value;
+    });
+
+    document.getElementById('inputInstructions').addEventListener('change', (e) => {
+        instructions = e.target.value;
+    });
 
     document.getElementById('uploadZone').addEventListener('drop', (e) => {
         e.preventDefault();
@@ -240,14 +269,15 @@
     }
 
     function addFiles(files){
-        if (!validate(files)){
-            return;
+        resetErrors();
+        for (const file of files) {
+            if (validateFile(file)) {
+                fileList.push(file);
+                renderUploadItem(file);
+            }
         }
 
-        for (const file of files) {
-            fileList.push(file);
-            renderUploadItem(file);
-        }
+        document.getElementById('nrFiles').innerText = fileList.length
     }
 
     function removeFile(id, filename){
@@ -255,16 +285,53 @@
         fileList = fileList.filter(file => file.name !== filename);
     }
 
-    function validate(files) {
-        const errorMsg = document.getElementById('errorMaxFile');
-        if (files.length > 10) {
-            errorMsg.innerText = "You can only upload a maximum of 10 files!";
-            errorMsg.style.display = "block";
+
+    function validateFile(file) {
+        const errorMsgMax = document.getElementById('errorMaxFile');
+        const errorMsgFormat = document.getElementById('errorFileFormat');
+        if(!file){
+            errorMsgMax.innerText = "Oops! Something went wrong.";
+            errorMsgMax.style.display = "block";
+            return false;
+        } else if (fileList.length >= 10) {
+            errorMsgMax.innerText = "You can only upload a maximum of 10 files!";
+            errorMsgMax.style.display = "block";
+            return false;
+        }else if (!checkIfValidFileFormat(file.name)) {
+            errorMsgFormat.innerText += `${file.name}: not a valid file format\n`;
+            errorMsgFormat.style.display = "block";
             return false;
         }
-        errorMsg.style.display = "none";
+
         return true;
     }
+
+    function resetErrors() {
+        const errorMsgMax = document.getElementById('errorMaxFile');
+        errorMsgMax.style.display = "none";
+        errorMsgMax.innerText = "";
+
+        const errorMsgFormat = document.getElementById('errorFileFormat');
+        errorMsgFormat.style.display = "none";
+        errorMsgFormat.innerText = "";
+    }
+
+    /**
+     * Checks if a given filename has a valid format for upload at thingiverse
+     * @param filename name (incl. extension) of the file to check
+     * @return {boolean}
+     */
+    function checkIfThingiverseFile(filename) {
+        const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx)$/)
+        return regex.test(filename);
+    }
+
+    function checkIfValidFileFormat(filename) {
+        const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx|mp3|mp4|wav)$/)
+        return regex.test(filename)
+    }
+
+
 
     function uploadFiles(files) {
 
@@ -285,7 +352,7 @@
     /**
      * Synchronous function to create a new item at Thingiverse
      *
-     * @return {string|undefined}
+     * @return {string|undefined} Returns the itemId when successful and undefined if the response status was not 200
      */
     function createThingiverseItem(){
         if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
@@ -294,12 +361,12 @@
         }
 
         const url = "https://api.thingiverse.com/things";
-        const item = { // todo
-            "name": "title",
-            "category":"Art",
-            "tags":["foo","bar","baz"],
-            "description":"This is a test thing",
-            "instructions":"Print and enjoy",
+        const item = {
+            "name": title,
+            "category":category,
+            "tags":[],
+            "description": description,
+            "instructions": instructions,
             "is_wip":true,
             "license":"cc"
         }
@@ -323,10 +390,11 @@
 
     /**
      * Synchronous function to inform Thingiverse that you want to attach a file to an item.
+     * @async
      * @param file File object that should be uploaded.
      * @param itemId String which identifies the item to which the file should be attached.
      *
-     * @return {any|undefined} aws info or undefined in case of error.
+     * @return {any|undefined} returns the metadata needed to access the bucket if successful and undefined if status not 200.
      */
     function informThingiversePreUpload(file, itemId){
         if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
@@ -354,8 +422,8 @@
 
     /**
      * Asynchronous function to upload a given file to the corresponding AWS Bucket.
-     * @param awsInfo
-     * @param file
+     * @param awsInfo Metadata needed to access the AWS bucket
+     * @param file File object that should be uploaded
      */
     function createFileAws(awsInfo, file){
         const url = awsInfo.action.substring(0, awsInfo.action.length-1);
@@ -380,6 +448,7 @@
                 console.log(resAws);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
+                // todo: error always occurs - redirect to thingiverse unauthorized
                 console.log("Error occurred:");
                 console.log(xhr.response)
             }
@@ -388,22 +457,7 @@
         xhr.send(formData);
     }
 
-    // todo: inform thingiverse postupload
-
-    function authorizeThingiverse() { // todo needed?
-        if (!thingiverseCredentials
-            || !thingiverseCredentials.clientSecret
-            || !thingiverseCredentials.clientdId
-            || !thingiverseCredentials.appToken) {
-            console.log("Missing credentials");
-            return;
-        }
-
-        let ajax = new XMLHttpRequest();
-        const url = "https://api.thingiverse.com"
-
-
-    }
+    // todo: inform thingiverse postupload how to get the fileId from the reponse?
 
     /**
      * Renders HTML elements for a given file
@@ -412,7 +466,7 @@
      *      <i class="far fa-file-pdf"></i>
      *      <div class="file">
      *          <div class="file__name">
-     *              <p>lorem_ipsum.pdf</p>
+     *              <p>lorem_ipsum.txt</p>
      *              <i class="fas fa-times"></i>
      *          </div>
      *          <div class="progress">
@@ -422,7 +476,6 @@
      *  </div>
      */
     function renderUploadItem(file){
-        // todo error handling if file undefined or smth
         let fullName = file.name;
         let split = fullName.split('.');
         let extension = split[split.length-1];
@@ -467,6 +520,9 @@
 
     let fileList = [];
     let title = "";
+    let category ="Learning";
+    let description ="";
+    let instructions ="";
     let thingiverseApiToken;
     init();
 
