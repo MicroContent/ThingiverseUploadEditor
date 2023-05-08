@@ -173,9 +173,10 @@
         if (event) {
             event.preventDefault();
         }
-        const data = dataGetter();
-        parent.send(data);
-        updateLayout();
+        dataGetter().then(data => {
+            parent.send(data);
+            updateLayout();
+        });
     }
 
     function updateLayout() {
@@ -184,12 +185,17 @@
         });
     }
 
-    function dataGetter() { // todo
-        const title = document.getElementById('inputTitle')
+    async function dataGetter() {
+
+        const previewImgUrl = await readFileAsUrl(titleImage);
+        let cloudinaryFilesUrl = await readAllFilesAsUrl(cloudinaryFiles);
 
         return {
             type: 'updateData',
             title: title,
+            imgUrl: previewImgUrl,
+            description: description,
+            cloudinaryFiles: cloudinaryFilesUrl,
             mediaUrlArray: "fileUrl"
         }
     }
@@ -354,7 +360,13 @@
     function uploadFiles(files) {
         if (!validateTitle()) return; // Guard: no title
 
-        const itemId = createThingiverseItem();
+        console.log("HERE")
+        dataGetter().then(res => {
+            console.log(res);
+        })
+
+        //const itemId = createThingiverseItem();
+        const itemId = "jasdk";
         if (!itemId) return; // Guard: could not create item
 
         for (const file of files) {
@@ -365,8 +377,7 @@
                 createFileAws(awsInfo, file);
 
             } else {
-                console.log("upload to cloudinary")
-                // TODO
+                cloudinaryFiles.push(file)
             }
 
         }
@@ -471,7 +482,6 @@
         xhr.upload.onprogress = (evt) => {
             if (evt.lengthComputable) {
                 let percentComplete = parseInt((evt.loaded / file.size) * 100);
-                console.log(percentComplete) //todo not wokring correctly (102 for some reason)
                 const progressbar = document.getElementById(`progress-${file.name}`);
                 progressbar.style.width = `${percentComplete}%`;
                 if (percentComplete === 100) {
@@ -603,14 +613,33 @@
         return true;
     }
 
+    function readFileAsUrl(file) {
+        if (!file) return;
+        const fileReader = new FileReader();
+
+        return new Promise( (resolve, reject) => {
+            fileReader.onload = _ => {
+                resolve(fileReader.result);
+            }
+            fileReader.readAsDataURL(file);
+        });
+    }
+
+    async function readAllFilesAsUrl(files) {
+        //let filesArray = Array.prototype.slice.call(files) todo needed?
+        return Promise.all(files.map(readFileAsUrl))
+    }
+
     /* === init Plugin === */
     let fileList = [];
     let title = "";
-    let titleImage;
     let category = "Learning";
     let description = "";
     let instructions = "";
     let thingiverseApiToken;
+
+    let titleImage;
+    let cloudinaryFiles = [];
     init();
 
 </script>
