@@ -33,7 +33,7 @@
             border-radius: 0.5em;
             background-color: white;
             width: 30em;
-            max-height: 25em;
+            max-height: 30em;
             overflow: auto;
             margin-bottom: 1em;
         }
@@ -46,6 +46,14 @@
 
         .form-control {
             margin-top: 0.5em;
+        }
+
+        .custom-file-label {
+            margin-bottom: 0.5em;
+        }
+
+        #inputGroupFile {
+            margin-bottom: 0.5em;
         }
 
         /* === Upload Box === */
@@ -142,7 +150,7 @@
     </style>
 </head>
 <body>
-<!-- Connection establishment and communication-->
+<!-- Connection establishment and communication -->
 <script>
     var parent = window.seamless.connect({
         url: window.location.url,
@@ -196,16 +204,25 @@
 <div class="container">
     <div class="wrapper form-group">
         <h3 class="title">Upload Files </h3><i class="bi bi-info-circle"></i>
-        <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title" type="text">
-        <small class="hint" id="helpTitle">Enter a title for the Thing (max. 60 characters)</small>
+        <div class="input-group">
+            <input type="file" id="inputGroupFile">
+            <label class="custom-file-label" for="inputGroupFile" id="inputGroupFileLabel">Choose Preview Image</label>
+        </div>
+        <form class="needs-validation" id="form">
+            <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title*" type="text" required>
+            <div class="invalid-feedback">
+                Please add a title!
+            </div>
+            <small class="hint" id="helpTitle">Enter a title for the Thing (max. 60 characters)</small>
 
-        <textarea id="inputDescription" maxlength="200" rows="3"
-                  class="form-control"  aria-labelledby="helpDescription" placeholder="Description" type="text"></textarea>
-        <small class="hint" id="helpDescription">Add a text to describe the Thing you want to upload to Thingiverse</small>
+            <textarea id="inputDescription" maxlength="200" rows="3"
+                      class="form-control"  aria-labelledby="helpDescription" placeholder="Description" type="text"></textarea>
+            <small class="hint" id="helpDescription">Add a text to describe the Thing you want to upload to Thingiverse</small>
 
-        <textarea id="inputInstructions" maxlength="200" rows="3"
-                  class="form-control"  aria-labelledby="helpInstructions" placeholder="Instructions" type="text"></textarea>
-        <small class="hint" id="helpInstructions">Add instructions to the Thing you want to upload to Thingiverse</small>
+            <textarea id="inputInstructions" maxlength="200" rows="3"
+                      class="form-control"  aria-labelledby="helpInstructions" placeholder="Instructions" type="text"></textarea>
+            <small class="hint" id="helpInstructions">Add instructions to the Thing you want to upload to Thingiverse</small>
+        </form>
     </div>
 
     <div id="FileUpload">
@@ -223,7 +240,7 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-success" onclick="uploadFiles(fileList)">Upload</button>
+    <button type="submit" class="btn btn-success" onclick="uploadFiles(fileList)">Upload</button>
 </div>
 
 
@@ -231,6 +248,10 @@
 <script>
 
     /* === Event Listeners on UI === */
+    document.getElementById('inputGroupFile').addEventListener('change', (e) => {
+        titleImage = e.target.files[0];
+        document.getElementById('inputGroupFileLabel').innerText = titleImage.name;
+    });
 
     document.getElementById('inputTitle').addEventListener('change', (e) => {
         title = e.target.value;
@@ -260,11 +281,13 @@
         document.getElementById('uploadZone').style.borderColor = '#EDEDED';
     });
 
+
     function openFileExplorer() {
-        document.getElementById('selectFile').click();
-        document.getElementById('selectFile').onchange = function() {
+        const inputFile = document.getElementById('selectFile');
+        inputFile.click();
+        inputFile.onchange = function() {
             let files = document.getElementById('selectFile').files;
-            addFiles(files)
+            addFiles(files);
         };
     }
 
@@ -276,15 +299,14 @@
                 renderUploadItem(file);
             }
         }
-
-        document.getElementById('nrFiles').innerText = fileList.length
+        updateNrOfFilesString();
     }
 
     function removeFile(id, filename){
         document.getElementById(id).remove();
         fileList = fileList.filter(file => file.name !== filename);
+        updateNrOfFilesString();
     }
-
 
     function validateFile(file) {
         const errorMsgMax = document.getElementById('errorMaxFile');
@@ -301,19 +323,13 @@
             errorMsgFormat.innerText += `${file.name}: not a valid file format\n`;
             errorMsgFormat.style.display = "block";
             return false;
+        } else if (!checkIfValidFileSize(file)) {
+            errorMsgMax.innerText = "File size cannot exceed 10MB!"
+            errorMsgMax.style.display = "block";
+            return false;
         }
 
         return true;
-    }
-
-    function resetErrors() {
-        const errorMsgMax = document.getElementById('errorMaxFile');
-        errorMsgMax.style.display = "none";
-        errorMsgMax.innerText = "";
-
-        const errorMsgFormat = document.getElementById('errorFileFormat');
-        errorMsgFormat.style.display = "none";
-        errorMsgFormat.innerText = "";
     }
 
     /**
@@ -331,23 +347,33 @@
         return regex.test(filename)
     }
 
-
+    function checkIfValidFileSize(file) {
+        return file.size < 10485760;
+    }
 
     function uploadFiles(files) {
-
-        // todo upload depending on file type
+        if (!validateTitle()) return; // Guard: no title
 
         const itemId = createThingiverseItem();
+        if (!itemId) return; // Guard: could not create item
 
-        if (itemId) {
-            for (const file of files) {
+        for (const file of files) {
+            if (checkIfThingiverseFile(file.name)){
                 const awsInfo = informThingiversePreUpload(file, itemId);
-                if (awsInfo){
-                    createFileAws(awsInfo, file);
-                }
+                if (!awsInfo) return; // Guard: could not upload file
+
+                createFileAws(awsInfo, file);
+
+            } else {
+                console.log("upload to cloudinary")
+                // TODO
             }
+
         }
+
     }
+
+    /* === API calls === */
 
     /**
      * Synchronous function to create a new item at Thingiverse
@@ -444,14 +470,17 @@
         xhr.open('POST', url, true);
         xhr.upload.onprogress = (evt) => {
             if (evt.lengthComputable) {
-                console.log("sog amoi mochst du irgendwas?")
-                let percentComplete = parseInt((evt.loaded / file.size) * 100); //todo not wokring correctly (102 for some reason)
-                console.log(percentComplete)
-                document.getElementById(`progress-${file.name}`).style.width = percentComplete;
+                let percentComplete = parseInt((evt.loaded / file.size) * 100);
+                console.log(percentComplete) //todo not wokring correctly (102 for some reason)
+                const progressbar = document.getElementById(`progress-${file.name}`);
+                progressbar.style.width = `${percentComplete}%`;
+                if (percentComplete === 100) {
+                    setProgressbarStyleComplete(progressbar)
+                }
             }
         }
         xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
+            if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401) ) {
                 const resAws = JSON.parse(xhr.response);
                 console.log(resAws);
                 informThingiversePostUpload(awsInfo.fields.success_action_redirect);
@@ -465,8 +494,10 @@
         xhr.send(formData);
     }
 
-    // todo: inform thingiverse postupload how to get the fileId from the reponse?
-
+    /**
+     * Asynchronous function to inform Thingiverse that a file has been attached to an item
+     * @param redirectUrl url provided by Thingiverse to finalize the fileupload
+     */
     function informThingiversePostUpload(redirectUrl){
         let xhr = new XMLHttpRequest();
         xhr.open("POST", redirectUrl, true);
@@ -483,6 +514,8 @@
         }
         xhr.send();
     }
+
+    /* === HTML and CSS updates === */
 
     /**
      * Renders HTML elements for a given file
@@ -543,11 +576,40 @@
         document.getElementById('divUploadItems').append(divUploaded);
     }
 
+    function setProgressbarStyleComplete(progressbar) {
+        progressbar.classList.remove('progress-bar-striped','progress-bar-animated');
+    }
+
+    function resetErrors() {
+        const errorMsgMax = document.getElementById('errorMaxFile');
+        errorMsgMax.style.display = "none";
+        errorMsgMax.innerText = "";
+
+        const errorMsgFormat = document.getElementById('errorFileFormat');
+        errorMsgFormat.style.display = "none";
+        errorMsgFormat.innerText = "";
+    }
+
+    function updateNrOfFilesString() {
+        document.getElementById('nrFiles').innerText = fileList.length
+    }
+
+    function validateTitle(){
+        if (!title || title.trim() === ""){
+            document.getElementById('form').classList.add('was-validated');
+            return false;
+        }
+        document.getElementById('form').classList.remove('was-validated');
+        return true;
+    }
+
+    /* === init Plugin === */
     let fileList = [];
     let title = "";
-    let category ="Learning";
-    let description ="";
-    let instructions ="";
+    let titleImage;
+    let category = "Learning";
+    let description = "";
+    let instructions = "";
     let thingiverseApiToken;
     init();
 
