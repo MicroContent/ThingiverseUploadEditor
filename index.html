@@ -38,7 +38,15 @@
             margin-bottom: 1em;
         }
 
+        .title-section {
+            display: flex;
+            justify-content: center;
+            align-content: flex-start;
+            flex-wrap: wrap;
+        }
+
         /* === Text Input Box === */
+
         .title {
             letter-spacing: 0.1em;
             text-align: center;
@@ -50,11 +58,55 @@
 
         .custom-file-label {
             margin-bottom: 0.5em;
+            cursor: pointer;
         }
 
         #inputGroupFile {
             margin-bottom: 0.5em;
         }
+
+        small {
+            float: right;
+        }
+
+        .info-icon {
+            cursor: pointer;
+        }
+
+        .break {
+            flex-basis: 100%;
+            height: 0;
+        }
+
+
+        .tool-tip {
+            flex-basis: 100%;
+            display: none;
+            z-index: 2;
+        }
+
+         .tooltiptext {
+            max-width: 30em;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 0.5em;
+            position: absolute;
+        }
+
+         .tooltiptext::after {
+            content: "";
+            position: absolute;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+         #close-txt {
+             text-decoration: underline;
+             cursor: pointer;
+         }
 
         /* === Upload Box === */
         .upload {
@@ -165,7 +217,7 @@
                init(window.data);
                break;
            case 'getContent':
-
+                sendToParent();
        }
     });
 
@@ -193,15 +245,24 @@
         return {
             type: 'updateData',
             title: title,
+            thingUrl: thingiverseItemUrl,
             imgUrl: previewImgUrl,
             description: description,
-            cloudinaryFiles: cloudinaryFilesUrl,
-            mediaUrlArray: "fileUrl"
+            mediaUrlArray: cloudinaryFilesUrl,
+            thingiverseFiles: thingiverseFilesUrl
         }
     }
 
     function init(data) {
+        if (data) {
+            thingiverseApiToken = data.token;
+            title = data.title;
+            description = data.description;
+            instructions = data.instructions;
 
+        } else {
+
+        }
     }
 </script>
 
@@ -209,25 +270,44 @@
 <!-- UI -->
 <div class="container">
     <div class="wrapper form-group">
-        <h3 class="title">Upload Files </h3><i class="bi bi-info-circle"></i>
+        <div class="title-section">
+            <h3 class="title">Upload Files </h3>
+
+            <div class="bi bi-info-circle info-icon " onclick="toggleTooltip()"></div>
+
+            <div class="tool-tip" id="tooltip">
+                <span class="tooltiptext">This plugin helps you upload 3D printing files and all associated data.
+                    The files will be uploaded to the <a href="https://www.thingiverse.com/tatabooks/designs" target="_blank">tatabooks</a> account by default,
+                    if you would like to upload files to your own account, please upload them to <a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a> directly.
+                    <br><span id="close-txt" onclick="toggleTooltip()">Dismiss</span></span>
+            </div>
+
+
+        </div>
+
         <div class="input-group">
             <input type="file" id="inputGroupFile">
             <label class="custom-file-label" for="inputGroupFile" id="inputGroupFileLabel">Choose Preview Image</label>
         </div>
         <form class="needs-validation" id="form">
             <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title*" type="text" required>
+            <label class="hint" id="helpTitle" for="inputTitle">Enter a title for the Thing (max. 60 characters)</label>
+            <small>*required</small>
             <div class="invalid-feedback">
                 Please add a title!
             </div>
-            <small class="hint" id="helpTitle">Enter a title for the Thing (max. 60 characters)</small>
 
             <textarea id="inputDescription" maxlength="200" rows="3"
-                      class="form-control"  aria-labelledby="helpDescription" placeholder="Description" type="text"></textarea>
-            <small class="hint" id="helpDescription">Add a text to describe the Thing you want to upload to Thingiverse</small>
+                      class="form-control"  aria-labelledby="labelDescription"
+                      placeholder="Add a text to describe the Thing you want to upload to Thingiverse"></textarea>
+            <label id="labelDescription" for="inputDescription">Description</label>
 
             <textarea id="inputInstructions" maxlength="200" rows="3"
-                      class="form-control"  aria-labelledby="helpInstructions" placeholder="Instructions" type="text"></textarea>
-            <small class="hint" id="helpInstructions">Add instructions to the Thing you want to upload to Thingiverse</small>
+                      class="form-control"  aria-labelledby="labelDescription"
+                      placeholder="Add instructions for printing to the Thing you want to upload to Thingiverse"></textarea>
+            <label id="labelInstructions" for="inputInstructions">Instructions</label>
+
+
         </form>
     </div>
 
@@ -315,23 +395,17 @@
     }
 
     function validateFile(file) {
-        const errorMsgMax = document.getElementById('errorMaxFile');
-        const errorMsgFormat = document.getElementById('errorFileFormat');
         if(!file){
-            errorMsgMax.innerText = "Oops! Something went wrong.";
-            errorMsgMax.style.display = "block";
+            setErrorMaxFile("Oops! Something went wrong.")
             return false;
         } else if (fileList.length >= 10) {
-            errorMsgMax.innerText = "You can only upload a maximum of 10 files!";
-            errorMsgMax.style.display = "block";
+            setErrorMaxFile("You can only upload a maximum of 10 files!")
             return false;
         }else if (!checkIfValidFileFormat(file.name)) {
-            errorMsgFormat.innerText += `${file.name}: not a valid file format\n`;
-            errorMsgFormat.style.display = "block";
+            setErrorMsgFormat(`${file.name}: not a valid file format\n`)
             return false;
         } else if (!checkIfValidFileSize(file)) {
-            errorMsgMax.innerText = "File size cannot exceed 10MB!"
-            errorMsgMax.style.display = "block";
+            setErrorMaxFile("File size cannot exceed 10MB!")
             return false;
         }
 
@@ -360,13 +434,7 @@
     function uploadFiles(files) {
         if (!validateTitle()) return; // Guard: no title
 
-        console.log("HERE")
-        dataGetter().then(res => {
-            console.log(res);
-        })
-
-        //const itemId = createThingiverseItem();
-        const itemId = "jasdk";
+        const itemId = createThingiverseItem();
         if (!itemId) return; // Guard: could not create item
 
         for (const file of files) {
@@ -382,6 +450,24 @@
 
         }
 
+
+    }
+
+    function readFileAsUrl(file) {
+        if (!file) return;
+        const fileReader = new FileReader();
+
+        return new Promise( (resolve, reject) => {
+            fileReader.onload = _ => {
+                resolve(fileReader.result);
+            }
+            fileReader.readAsDataURL(file);
+        });
+    }
+
+    async function readAllFilesAsUrl(files) {
+        //let filesArray = Array.prototype.slice.call(files) todo needed?
+        return Promise.all(files.map(readFileAsUrl))
     }
 
     /* === API calls === */
@@ -417,8 +503,10 @@
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             const response = JSON.parse(xhr.response);
             console.log(response);
+            thingiverseItemUrl = response.url;
             return response.id;
         } else {
+            setErrorMaxFile("Oops! Something went wrong, please try again later.")
             console.log("An issue occurred during the creation of the item");
             console.log(xhr.response);
             return undefined;
@@ -451,7 +539,7 @@
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             return JSON.parse(xhr.response);
         } else {
-            console.log("An issue occurred during file upload to AWS");
+            console.log("An issue occurred during informing thingiverse preupload:");
             console.log(xhr.response);
             return undefined;
         }
@@ -495,8 +583,9 @@
                 console.log(resAws);
                 informThingiversePostUpload(awsInfo.fields.success_action_redirect);
 
-            } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
-                console.log("Error occurred:");
+            } else if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status !== 200|| xhr.status !== 401)) {
+                setErrorMaxFile("Oops! Something went wrong, try again later.");
+                console.log("Error occurred during upload to AWS:");
                 console.log(xhr.response)
             }
         }
@@ -515,6 +604,7 @@
         xhr.onload = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
                 const res = JSON.parse(xhr.response);
+                thingiverseFilesUrl.push(redirectUrl.replace('finalize', 'download'));
                 console.log(res);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
@@ -600,8 +690,20 @@
         errorMsgFormat.innerText = "";
     }
 
+    function setErrorMaxFile(msg) {
+        const errorMsgMax = document.getElementById('errorMaxFile');
+        errorMsgMax.style.display = "block";
+        errorMsgMax.innerText = msg;
+    }
+
+    function setErrorMsgFormat(msg) {
+        const errorMsgMax = document.getElementById('errorFileFormat');
+        errorMsgMax.style.display = "block";
+        errorMsgMax.innerText += msg;
+    }
+
     function updateNrOfFilesString() {
-        document.getElementById('nrFiles').innerText = fileList.length
+        document.getElementById('nrFiles').innerText = fileList.length;
     }
 
     function validateTitle(){
@@ -613,33 +715,23 @@
         return true;
     }
 
-    function readFileAsUrl(file) {
-        if (!file) return;
-        const fileReader = new FileReader();
-
-        return new Promise( (resolve, reject) => {
-            fileReader.onload = _ => {
-                resolve(fileReader.result);
-            }
-            fileReader.readAsDataURL(file);
-        });
-    }
-
-    async function readAllFilesAsUrl(files) {
-        //let filesArray = Array.prototype.slice.call(files) todo needed?
-        return Promise.all(files.map(readFileAsUrl))
+    function toggleTooltip(){
+        const tooltip = document.getElementById('tooltip');
+        tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
     }
 
     /* === init Plugin === */
     let fileList = [];
+    let cloudinaryFiles = [];
+    let titleImage;
     let title = "";
     let category = "Learning";
     let description = "";
     let instructions = "";
     let thingiverseApiToken;
 
-    let titleImage;
-    let cloudinaryFiles = [];
+    let thingiverseFilesUrl = [];
+    let thingiverseItemUrl = "";
     init();
 
 </script>
