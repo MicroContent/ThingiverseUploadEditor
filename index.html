@@ -272,7 +272,6 @@
     <div class="wrapper form-group">
         <div class="title-section">
             <h3 class="title">Upload Files </h3>
-
             <div class="bi bi-info-circle info-icon " onclick="toggleTooltip()"></div>
 
             <div class="tool-tip" id="tooltip">
@@ -281,7 +280,6 @@
                     if you would like to upload files to your own account, please upload them to <a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a> directly.
                     <br><span id="close-txt" onclick="toggleTooltip()">Dismiss</span></span>
             </div>
-
 
         </div>
 
@@ -466,7 +464,6 @@
     }
 
     async function readAllFilesAsUrl(files) {
-        //let filesArray = Array.prototype.slice.call(files) todo needed?
         return Promise.all(files.map(readFileAsUrl))
     }
 
@@ -621,9 +618,9 @@
      * Renders HTML elements for a given file
      * @example
      *  <div class="uploaded uploaded--one">
-     *      <i class="far fa-file-pdf"></i>
+     *      <i class="far fa-file"></i>
      *      <div class="file">
-     *          <div class="file__name">
+     *          <div class="file-name">
      *              <p>lorem_ipsum.txt</p>
      *              <i class="fas fa-times"></i>
      *          </div>
