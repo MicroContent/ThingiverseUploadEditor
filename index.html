@@ -445,10 +445,7 @@
             } else {
                 cloudinaryFiles.push(file)
             }
-
         }
-
-
     }
 
     function readFileAsUrl(file) {
@@ -487,7 +484,7 @@
             "tags":[],
             "description": description,
             "instructions": instructions,
-            "is_wip":true,
+            "is_wip":false,
             "license":"cc"
         }
 
@@ -632,9 +629,7 @@
      */
     function renderUploadItem(file){
         let fullName = file.name;
-        let split = fullName.split('.');
-        let extension = split[split.length-1];
-        let shortenedName = split[0].substring(0, 13);
+        let shortenedName = shortenFilename(fullName, 13);
 
         let divUploaded = document.createElement('div');
         divUploaded.classList.add('uploaded')
@@ -647,7 +642,7 @@
         let divFileName = document.createElement('div');
         divFileName.classList.add('file-name');
         let pName = document.createElement('p');
-        pName.innerText = shortenedName + '...' + extension;
+        pName.innerText = shortenedName;
         let iconClose = document.createElement('i');
         iconClose.id = 'icon-close-'+fullName;
         iconClose.classList.add('fas', 'fa-times');
@@ -671,6 +666,13 @@
         divUploaded.append(icon, divFile);
 
         document.getElementById('divUploadItems').append(divUploaded);
+    }
+
+    function shortenFilename(filename, length) {
+        let split = filename.split('.');
+        let extension = split[split.length-1];
+        let shortenedName = split[0].substring(0, length);
+        return shortenedName + "..." + extension;
     }
 
     function setProgressbarStyleComplete(progressbar) {
