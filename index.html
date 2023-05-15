@@ -497,7 +497,7 @@
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             const response = JSON.parse(xhr.response);
             console.log(response);
-            thingiverseItemUrl = response.url;
+            thingiverseItemUrl = response.public_url;
             return response.id;
         } else {
             setErrorMaxFile("Oops! Something went wrong, please try again later.")
