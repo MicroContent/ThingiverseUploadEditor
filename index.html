@@ -32,7 +32,7 @@
             box-shadow: 0 1em 2em rgba(0,0,0,0.30), 0 0.6em 0.5em rgba(0,0,0,0.22);
             border-radius: 0.5em;
             background-color: white;
-            width: 30em;
+            max-width: 30em;
             max-height: 30em;
             overflow: auto;
             margin-bottom: 1em;
@@ -161,29 +161,39 @@
         }
         .file {
             display: flex;
-            width: 100%;
+            width: 80%;
             flex-direction: column;
         }
         .file-name {
             display: flex;
             flex-direction: row;
-            justify-content: space-between;
             align-items: baseline;
-            width: 95%;
+            width: 100%;
             line-height: 0;
             color: #0c3214;
             font-size: 1.1rem;
             letter-spacing: 0.1em;
         }
+
+        .file-name p {
+            flex-grow: 2;
+        }
+
+        .fa-info-circle {
+            margin-right: 0.5em;
+        }
+
         .fa-times:hover {
             cursor: pointer;
             opacity: 0.8;
         }
+
         .fa-file {
             padding: 0.3em;
             font-size: 1em;
             color: #0c3214;
         }
+
         .error {
             margin: 0.5em;
             color: red;
@@ -312,8 +322,11 @@
     <div id="FileUpload">
         <div class="wrapper">
             <div class="upload" id="uploadZone">
-                <p>Drag files here or <button class="upload-button" onclick="openFileExplorer()">Browse</button></p>
+                <p>Drag files here or </p>
+                <div class="break"></div>
+                <button class="upload-button" onclick="openFileExplorer()">Browse</button>
                 <input type="file" id="selectFile" multiple>
+                <div class="break"></div>
                 <small class="hint-formats">Allowed file formats:<br>stl, obj, thing, scad, amf, dae, 3ds, x3d, blend, ply, dxf, ai, cdr, ps, eps, epsi, sch, brd, jpg, png, gif, svg, txt, doc, docx, mp3, wav, mp4</small>
             </div>
             <div class="error" id="errorMaxFile" style="display: none"></div>
@@ -437,6 +450,8 @@
 
         for (const file of files) {
             if (checkIfThingiverseFile(file.name)){
+                const progressbar = document.getElementById(`progress-${file.name}`);
+                progressbar.style.width = `7%`; // default progress to indicate actions to user
                 const awsInfo = informThingiversePreUpload(file, itemId);
                 if (!awsInfo) return; // Guard: could not upload file
 
@@ -564,11 +579,14 @@
         xhr.upload.onprogress = (evt) => {
             if (evt.lengthComputable) {
                 let percentComplete = parseInt((evt.loaded / file.size) * 100);
-                const progressbar = document.getElementById(`progress-${file.name}`);
-                progressbar.style.width = `${percentComplete}%`;
-                if (percentComplete === 100) {
-                    setProgressbarStyleComplete(progressbar)
+                if (percentComplete > 7) { // account for default progress when starting the upload
+                    const progressbar = document.getElementById(`progress-${file.name}`);
+                    progressbar.style.width = `${percentComplete}%`;
+                    if (percentComplete === 100) {
+                        setProgressbarStyleComplete(progressbar)
+                    }
                 }
+
             }
         }
         xhr.onreadystatechange = () => {
@@ -630,6 +648,7 @@
     function renderUploadItem(file){
         let fullName = file.name;
         let shortenedName = shortenFilename(fullName, 13);
+        let isThingiverse = checkIfThingiverseFile(fullName);
 
         let divUploaded = document.createElement('div');
         divUploaded.classList.add('uploaded')
@@ -643,12 +662,20 @@
         divFileName.classList.add('file-name');
         let pName = document.createElement('p');
         pName.innerText = shortenedName;
+
         let iconClose = document.createElement('i');
         iconClose.id = 'icon-close-'+fullName;
         iconClose.classList.add('fas', 'fa-times');
         iconClose.onclick = () => removeFile(divUploaded.id, fullName);
 
-        divFileName.append(pName, iconClose)
+        if (!isThingiverse) {
+            let iconInfo = document.createElement('i');
+            iconInfo.classList.add('fas', 'fa-info-circle');
+            iconInfo.title = "This file will ne uploaded using another service when you save the card."
+            divFileName.append(pName, iconInfo, iconClose);
+        } else {
+            divFileName.append(pName, iconClose)
+        }
 
         let divProgress = document.createElement('div');
         divProgress.classList.add('progress');
@@ -672,7 +699,7 @@
         let split = filename.split('.');
         let extension = split[split.length-1];
         let shortenedName = split[0].substring(0, length);
-        return shortenedName + "..." + extension;
+        return shortenedName + "... ." + extension;
     }
 
     function setProgressbarStyleComplete(progressbar) {
