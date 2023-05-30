@@ -20,7 +20,7 @@
 
         /* === Wrapper Styles === */
         .container {
-            margin: 3em 10em 3em 10em;
+            margin: 3em 4em 3em 4em;
         }
 
         #FileUpload {
@@ -32,7 +32,6 @@
             box-shadow: 0 1em 2em rgba(0,0,0,0.30), 0 0.6em 0.5em rgba(0,0,0,0.22);
             border-radius: 0.5em;
             background-color: white;
-            max-width: 30em;
             max-height: 30em;
             overflow: auto;
             margin-bottom: 1em;
@@ -209,6 +208,7 @@
         }
 
 
+
     </style>
 </head>
 <body>
@@ -251,6 +251,7 @@
 
         const previewImgUrl = await readFileAsUrl(titleImage);
         let cloudinaryFilesUrl = await readAllFilesAsUrl(cloudinaryFiles);
+        const fileNames = fileList.map(file => file.name);
 
         return {
             type: 'updateData',
@@ -259,7 +260,7 @@
             imageUrl: previewImgUrl,
             description: description,
             mediaUrlArray: cloudinaryFilesUrl,
-            thingiverseFiles: thingiverseFilesUrl
+            fileNames: fileNames
         }
     }
 
@@ -451,7 +452,7 @@
         for (const file of files) {
             if (checkIfThingiverseFile(file.name)){
                 const progressbar = document.getElementById(`progress-${file.name}`);
-                progressbar.style.width = `7%`; // default progress to indicate actions to user
+                progressbar.style.width = `7%`; // default progress to indicate background action to user
                 const awsInfo = informThingiversePreUpload(file, itemId);
                 if (!awsInfo) return; // Guard: could not upload file
 
@@ -472,6 +473,8 @@
                 resolve(fileReader.result);
             }
             fileReader.readAsDataURL(file);
+
+            reject = () => console.log("Could not read file: "+ file.name);
         });
     }
 
@@ -524,7 +527,6 @@
 
     /**
      * Synchronous function to inform Thingiverse that you want to attach a file to an item.
-     * @async
      * @param file File object that should be uploaded.
      * @param itemId String which identifies the item to which the file should be attached.
      *
@@ -581,7 +583,7 @@
                 let percentComplete = parseInt((evt.loaded / file.size) * 100);
                 if (percentComplete > 7) { // account for default progress when starting the upload
                     const progressbar = document.getElementById(`progress-${file.name}`);
-                    progressbar.style.width = `${percentComplete}%`;
+                    progressbar.style.width = `${percentComplete}%`; // todo this does funny things sometimes
                     if (percentComplete === 100) {
                         setProgressbarStyleComplete(progressbar)
                     }
@@ -592,13 +594,10 @@
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401) ) {
                 const resAws = JSON.parse(xhr.response);
-                console.log(resAws);
                 informThingiversePostUpload(awsInfo.fields.success_action_redirect);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status !== 200|| xhr.status !== 401)) {
-                setErrorMaxFile("Oops! Something went wrong, try again later.");
-                console.log("Error occurred during upload to AWS:");
-                console.log(xhr.response)
+                handleFileUploadError(file, xhr.response);
             }
         }
 
@@ -616,7 +615,6 @@
         xhr.onload = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
                 const res = JSON.parse(xhr.response);
-                thingiverseFilesUrl.push(redirectUrl.replace('finalize', 'download'));
                 console.log(res);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
@@ -625,6 +623,22 @@
             }
         }
         xhr.send();
+    }
+
+    /**
+     * Function to handle an error during file upload
+     * Removes the failed file from the fileList and gives UI feedback to the user.
+     * @param file File object for which the upload failed
+     * @param response Response returned from the API.
+     */
+    function handleFileUploadError(file, response) {
+        const index = fileList.indexOf(file);
+        fileList.splice(index, 1);
+        /*const infoIcon = document.getElementById(`icon-info-${file.name}`)
+        infoIcon.classList // todo style UI file item for error, allow retry?*/
+        setErrorMaxFile("Oops! Something went wrong, try again later.");
+        console.log("Error occurred during upload to AWS:");
+        console.log(response)
     }
 
     /* === HTML and CSS updates === */
@@ -671,6 +685,7 @@
         if (!isThingiverse) {
             let iconInfo = document.createElement('i');
             iconInfo.classList.add('fas', 'fa-info-circle');
+            iconInfo.id = 'icon-info-'+fullName;
             iconInfo.title = "This file will ne uploaded using another service when you save the card."
             divFileName.append(pName, iconInfo, iconClose);
         } else {
@@ -755,8 +770,6 @@
     let description = "";
     let instructions = "";
     let thingiverseApiToken;
-
-    let thingiverseFilesUrl = [];
     let thingiverseItemUrl = "";
     init();
 
