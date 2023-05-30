@@ -251,7 +251,7 @@
 
         const previewImgUrl = await readFileAsUrl(titleImage);
         let cloudinaryFilesUrl = await readAllFilesAsUrl(cloudinaryFiles);
-        const fileNames = fileList.map(file => file.name);
+        const fileNames = fileList.map(file => file.name ? file.name : file);
 
         return {
             type: 'updateData',
@@ -274,7 +274,7 @@
             description = data.description? data.description : "";
             instructions = data.instructions? data.instructions : "";
             thingiverseItemUrl = data.thingUrl? data.thingUrl : "";
-            fileList = data.fileNames? data.fileNames : []; // 
+            fileList = data.fileNames? data.fileNames : [];
             cloudinaryFiles = data.mediaUrlArray? data.mediaUrlArray : [];
 
             for (const filename of fileList) {
@@ -406,7 +406,7 @@
         for (const file of files) {
             if (validateFile(file)) {
                 fileList.push(file);
-                renderUploadItem(file);
+                renderUploadItem(file.name);
             }
         }
         updateNrOfFilesString();
