@@ -267,12 +267,15 @@
     function init(data) {
         if (data) {
             thingiverseApiToken = data.token;
-            title = data.title;
+            if (data.title) {
+                isEdit = true;
+                title = data.title;
+            }
             description = data.description? data.description : "";
             instructions = data.instructions? data.instructions : "";
             thingiverseItemUrl = data.thingUrl? data.thingUrl : "";
-            fileList = data.fileNames; // todo: problem assigning names to file list?
-            cloudinaryFiles = data.mediaUrlArray;
+            fileList = data.fileNames? data.fileNames : []; // 
+            cloudinaryFiles = data.mediaUrlArray? data.mediaUrlArray : [];
 
             for (const filename of fileList) {
                 renderUploadItem(filename)
@@ -280,8 +283,6 @@
             document.getElementById('inputTitle').value = title;
             document.getElementById('inputDescription').value = description;
             document.getElementById('inputInstructions').value = instructions;
-
-        } else {
 
         }
     }
@@ -457,10 +458,21 @@
     function uploadFiles(files) {
         if (!validateTitle()) return; // Guard: no title
 
-        const itemId = createThingiverseItem();
+        let itemId;
+
+        if (isEdit){
+            const urlComps = thingiverseItemUrl.split(":")
+            itemId = urlComps[urlComps.length-1];
+            patchThingiverseItem(itemId);
+        } else {
+            itemId = createThingiverseItem();
+        }
+
         if (!itemId) return; // Guard: could not create item
 
         for (const file of files) {
+            if (isEdit && !file.name) return; // file already uploaded
+
             if (checkIfThingiverseFile(file.name)){
                 const progressbar = document.getElementById(`progress-${file.name}`);
                 progressbar.style.width = `7%`; // default progress to indicate background action to user
@@ -485,7 +497,6 @@
             }
             fileReader.readAsDataURL(file);
 
-            reject = () => console.log("Could not read file: "+ file.name);
         });
     }
 
@@ -510,7 +521,7 @@
         const item = {
             "name": title,
             "category":category,
-            "tags":[],
+            "tags":[], // todo tags = keywords?
             "description": description,
             "instructions": instructions,
             "is_wip":false,
@@ -533,6 +544,41 @@
             console.log("An issue occurred during the creation of the item");
             console.log(xhr.response);
             return undefined;
+        }
+    }
+
+    function patchThingiverseItem(itemId){
+        if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
+            console.log("Missing credentials");
+            return;
+        } else if (!itemId) {
+            console.log("no Item ID provided.");
+            return;
+        }
+
+        const url = `https://api.thingiverse.com/things/${itemId}`;
+        const item = {
+            "name": title,
+            "category":category,
+            "tags":[], // todo tags = keywords?
+            "description": description,
+            "instructions": instructions,
+        }
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('PATCH', url, false);
+        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.send(JSON.stringify(item))
+
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            const response = JSON.parse(xhr.response);
+            console.log(response);
+
+        } else {
+            setErrorMaxFile("Oops! Something went wrong, please try again later.")
+            console.log("An issue occurred during the creation of the item");
+            console.log(xhr.response);
         }
     }
 
@@ -782,6 +828,7 @@
     let instructions = "";
     let thingiverseApiToken;
     let thingiverseItemUrl = "";
+    let isEdit = false;
     init();
 
 </script>
