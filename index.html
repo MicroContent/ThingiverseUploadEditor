@@ -160,7 +160,7 @@
         }
         .file {
             display: flex;
-            width: 80%;
+            width: 100%;
             flex-direction: column;
         }
         .file-name {
@@ -279,7 +279,8 @@
             titleImage = data.imageUrl? data.imageUrl: "";
 
             for (const filename of fileList) {
-                renderUploadItem(filename)
+                const isAlreadyUploaded = true;
+                renderUploadItem(filename, isAlreadyUploaded)
             }
             document.getElementById('inputTitle').value = title;
             document.getElementById('inputDescription').value = description;
@@ -651,10 +652,7 @@
                 let percentComplete = parseInt((evt.loaded / file.size) * 100);
                 if (percentComplete > 7) { // account for default progress when starting the upload
                     const progressbar = document.getElementById(`progress-${file.name}`);
-                    progressbar.style.width = `${percentComplete}%`; // todo this does funny things sometimes
-                    if (percentComplete === 100) {
-                        setProgressbarStyleComplete(progressbar)
-                    }
+                    progressbar.style.width = `${percentComplete}%`;
                 }
 
             }
@@ -662,7 +660,7 @@
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401) ) {
                 const resAws = JSON.parse(xhr.response);
-                informThingiversePostUpload(awsInfo.fields.success_action_redirect);
+                informThingiversePostUpload(awsInfo.fields.success_action_redirect, file.name);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status !== 200|| xhr.status !== 401)) {
                 handleFileUploadError(file, xhr.response);
@@ -675,14 +673,17 @@
     /**
      * Asynchronous function to inform Thingiverse that a file has been attached to an item
      * @param redirectUrl url provided by Thingiverse to finalize the fileupload
+     * @param filename name of the file that was just uploaded
      */
-    function informThingiversePostUpload(redirectUrl){
+    function informThingiversePostUpload(redirectUrl, filename){
         let xhr = new XMLHttpRequest();
         xhr.open("POST", redirectUrl, true);
         xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
         xhr.onload = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
                 const res = JSON.parse(xhr.response);
+                const progressbar = document.getElementById(`progress-${filename}`);
+                setProgressbarStyleComplete(progressbar);
                 console.log(res);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
@@ -727,7 +728,7 @@
      *      </div>
      *  </div>
      */
-    function renderUploadItem(filename){
+    function renderUploadItem(filename, isAlreadyUploaded){
 
         let shortenedName = shortenFilename(filename, 13);
         let isThingiverse = checkIfThingiverseFile(filename);
@@ -763,9 +764,16 @@
         let divProgress = document.createElement('div');
         divProgress.classList.add('progress');
         let divProgressbar = document.createElement('div');
-        divProgressbar.classList.add("progress-bar", "bg-success", "progress-bar-striped", "progress-bar-animated")
-        divProgressbar.style.width = "1%" // todo render differently if already uploaded
-        divProgressbar.id = "progress-"+filename;
+        if (isAlreadyUploaded) {
+            divProgressbar.classList.add("progress-bar", "bg-success")
+            divProgressbar.style.width = "100%" // todo render differently if already uploaded
+            divProgressbar.id = "progress-"+filename;
+        } else {
+            divProgressbar.classList.add("progress-bar", "bg-success", "progress-bar-striped", "progress-bar-animated")
+            divProgressbar.style.width = "1%" // todo render differently if already uploaded
+            divProgressbar.id = "progress-"+filename;
+        }
+
         divProgress.appendChild(divProgressbar);
         let pError = document.createElement('p');
         pError.classList.add('error');
