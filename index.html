@@ -207,7 +207,9 @@
             float: right;
         }
 
-
+        .fa-exclamation-triangle {
+            color: red;
+        }
 
     </style>
 </head>
@@ -223,7 +225,6 @@
        switch (data.type) {
            case 'setContent':
                window.data = data.main[0];
-               // todo set content
                init(window.data);
                break;
            case 'getContent':
@@ -703,8 +704,12 @@
     function handleFileUploadError(file, response) {
         const index = fileList.indexOf(file);
         fileList.splice(index, 1);
-        /*const infoIcon = document.getElementById(`icon-info-${file.name}`)
-        infoIcon.classList // todo style UI file item for error, allow retry?*/
+        const divFile = document.getElementById(`div-file-${file.name}`)
+        const iconError = document.createElement('i');
+        iconError.classList.add('fas', 'fa-exclamation-triangle');
+        divFile.appendChild(iconError);
+        document.getElementById(`progress-${file.name}`).style.width = '1%';
+        // todo allow retry?
         setErrorMaxFile("Oops! Something went wrong, try again later.");
         console.log("Error occurred during upload to AWS:");
         console.log(response)
@@ -743,6 +748,7 @@
         divFile.classList.add('file');
         let divFileName = document.createElement('div');
         divFileName.classList.add('file-name');
+        divFileName.id = 'div-file'+filename;
         let pName = document.createElement('p');
         pName.innerText = shortenedName;
 
@@ -766,11 +772,11 @@
         let divProgressbar = document.createElement('div');
         if (isAlreadyUploaded) {
             divProgressbar.classList.add("progress-bar", "bg-success")
-            divProgressbar.style.width = "100%" // todo render differently if already uploaded
+            divProgressbar.style.width = "100%"
             divProgressbar.id = "progress-"+filename;
         } else {
             divProgressbar.classList.add("progress-bar", "bg-success", "progress-bar-striped", "progress-bar-animated")
-            divProgressbar.style.width = "1%" // todo render differently if already uploaded
+            divProgressbar.style.width = "1%"
             divProgressbar.id = "progress-"+filename;
         }
 
