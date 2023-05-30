@@ -268,8 +268,18 @@
         if (data) {
             thingiverseApiToken = data.token;
             title = data.title;
-            description = data.description;
-            instructions = data.instructions;
+            description = data.description? data.description : "";
+            instructions = data.instructions? data.instructions : "";
+            thingiverseItemUrl = data.thingUrl? data.thingUrl : "";
+            fileList = data.fileNames; // todo: problem assigning names to file list?
+            cloudinaryFiles = data.mediaUrlArray;
+
+            for (const filename of fileList) {
+                renderUploadItem(filename)
+            }
+            document.getElementById('inputTitle').value = title;
+            document.getElementById('inputDescription').value = description;
+            document.getElementById('inputInstructions').value = instructions;
 
         } else {
 
@@ -378,6 +388,7 @@
         e.preventDefault();
         document.getElementById('uploadZone').style.borderColor = '#EDEDED';
     });
+
 
 
     function openFileExplorer() {
@@ -659,14 +670,14 @@
      *      </div>
      *  </div>
      */
-    function renderUploadItem(file){
-        let fullName = file.name;
-        let shortenedName = shortenFilename(fullName, 13);
-        let isThingiverse = checkIfThingiverseFile(fullName);
+    function renderUploadItem(filename){
+
+        let shortenedName = shortenFilename(filename, 13);
+        let isThingiverse = checkIfThingiverseFile(filename);
 
         let divUploaded = document.createElement('div');
         divUploaded.classList.add('uploaded')
-        divUploaded.id = 'uploaded-'+fullName;
+        divUploaded.id = 'uploaded-'+filename;
 
         let icon = document.createElement('i');
         icon.classList.add('far', 'fa-file');
@@ -678,14 +689,14 @@
         pName.innerText = shortenedName;
 
         let iconClose = document.createElement('i');
-        iconClose.id = 'icon-close-'+fullName;
+        iconClose.id = 'icon-close-'+filename;
         iconClose.classList.add('fas', 'fa-times');
-        iconClose.onclick = () => removeFile(divUploaded.id, fullName);
+        iconClose.onclick = () => removeFile(divUploaded.id, filename);
 
         if (!isThingiverse) {
             let iconInfo = document.createElement('i');
             iconInfo.classList.add('fas', 'fa-info-circle');
-            iconInfo.id = 'icon-info-'+fullName;
+            iconInfo.id = 'icon-info-'+filename;
             iconInfo.title = "This file will ne uploaded using another service when you save the card."
             divFileName.append(pName, iconInfo, iconClose);
         } else {
@@ -697,11 +708,11 @@
         let divProgressbar = document.createElement('div');
         divProgressbar.classList.add("progress-bar", "bg-success", "progress-bar-striped", "progress-bar-animated")
         divProgressbar.style.width = "1%"
-        divProgressbar.id = "progress-"+fullName;
+        divProgressbar.id = "progress-"+filename;
         divProgress.appendChild(divProgressbar);
         let pError = document.createElement('p');
         pError.classList.add('error');
-        pError.id = 'error-'+fullName;
+        pError.id = 'error-'+filename;
 
         divFile.append(divFileName, divProgress, pError)
 
