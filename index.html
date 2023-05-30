@@ -276,6 +276,7 @@
             thingiverseItemUrl = data.thingUrl? data.thingUrl : "";
             fileList = data.fileNames? data.fileNames : [];
             cloudinaryFiles = data.mediaUrlArray? data.mediaUrlArray : [];
+            titleImage = data.imageUrl? data.imageUrl: "";
 
             for (const filename of fileList) {
                 renderUploadItem(filename)
@@ -358,6 +359,7 @@
 
     /* === Event Listeners on UI === */
     document.getElementById('inputGroupFile').addEventListener('change', (e) => {
+        if (!e.target.files[0]) return;
         titleImage = e.target.files[0];
         document.getElementById('inputGroupFileLabel').innerText = titleImage.name;
     });
@@ -471,7 +473,7 @@
         if (!itemId) return; // Guard: could not create item
 
         for (const file of files) {
-            if (isEdit && !file.name) return; // file already uploaded
+            if (isEdit && !file.name) continue; // file already uploaded
 
             if (checkIfThingiverseFile(file.name)){
                 const progressbar = document.getElementById(`progress-${file.name}`);
@@ -482,18 +484,27 @@
                 createFileAws(awsInfo, file);
 
             } else {
-                cloudinaryFiles.push(file)
+                cloudinaryFiles.push(file);
             }
         }
     }
 
     function readFileAsUrl(file) {
-        if (!file) return;
+        if (!file) {
+            return;
+        } else if (!(file instanceof Blob)) {
+            return file;
+        }
+
         const fileReader = new FileReader();
 
         return new Promise( (resolve, reject) => {
             fileReader.onload = _ => {
                 resolve(fileReader.result);
+            }
+
+            fileReader.onerror = _ => {
+                reject("Could not Read");
             }
             fileReader.readAsDataURL(file);
 
@@ -753,7 +764,7 @@
         divProgress.classList.add('progress');
         let divProgressbar = document.createElement('div');
         divProgressbar.classList.add("progress-bar", "bg-success", "progress-bar-striped", "progress-bar-animated")
-        divProgressbar.style.width = "1%"
+        divProgressbar.style.width = "1%" // todo render differently if already uploaded
         divProgressbar.id = "progress-"+filename;
         divProgress.appendChild(divProgressbar);
         let pError = document.createElement('p');
