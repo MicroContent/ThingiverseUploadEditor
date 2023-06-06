@@ -259,6 +259,7 @@
             title: title,
             thingUrl: thingiverseItemUrl,
             imageUrl: previewImgUrl,
+            altDescription: altDescription,
             description: description,
             mediaUrlArray: cloudinaryFilesUrl,
             fileNames: fileNames
@@ -318,6 +319,8 @@
             <label class="custom-file-label" for="inputGroupFile" id="inputGroupFileLabel">Choose Preview Image</label>
         </div>
         <form class="needs-validation" id="form">
+            <input id="inputAltDesc" class="form-control" placeholder="alt. description" type="text">
+            <label class="hint" id="helpAlt" for="inputAltDesc">Please add an alt. description for your title image</label>
             <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title*" type="text" required>
             <label class="hint" id="helpTitle" for="inputTitle">Enter a title for the Thing (max. 60 characters)</label>
             <small>*required</small>
@@ -369,6 +372,10 @@
         if (!e.target.files[0]) return;
         titleImage = e.target.files[0];
         document.getElementById('inputGroupFileLabel').innerText = titleImage.name;
+    });
+
+    document.getElementById('inputAltDesc').addEventListener('change', (e) => {
+        altDescription = e.target.value;
     });
 
     document.getElementById('inputTitle').addEventListener('change', (e) => {
@@ -852,6 +859,7 @@
     let fileList = [];
     let cloudinaryFiles = [];
     let titleImage;
+    let altDescription ="";
     let title = "";
     let category = "Learning";
     let description = "";
