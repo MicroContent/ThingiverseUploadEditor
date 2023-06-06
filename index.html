@@ -262,7 +262,8 @@
             altDescription: altDescription,
             description: description,
             mediaUrlArray: cloudinaryFilesUrl,
-            fileNames: fileNames
+            fileNames: fileNames,
+            thingiverseIdMap: thingiverseIdMap
         }
     }
 
@@ -284,6 +285,8 @@
             fileList = data.fileNames? data.fileNames : [];
             cloudinaryFiles = data.mediaUrlArray? data.mediaUrlArray : [];
             titleImage = data.imageUrl? data.imageUrl: "";
+
+            thingiverseIdMap = data.thingiverseIdMap? data.thingiverseIdMap : [];
 
             for (const filename of fileList) {
                 const isAlreadyUploaded = true;
@@ -430,6 +433,13 @@
 
     function removeFile(id, filename){
         document.getElementById(id).remove();
+        const thingiverseId = thingiverseIdMap.filter(elem => elem.name === filename).map(elem => elem.id);
+        if (thingiverseId.length > 0 && thingiverseItemUrl !== "") {
+            const split = thingiverseItemUrl.split(':')
+            const itemId = split[split.length-1]
+            const isImage = checkIfImage(filename)
+            deleteThingiverseFileById(thingiverseId, itemId, isImage);
+        }
         fileList = fileList.filter(file => file.name !== filename);
         updateNrOfFilesString();
     }
@@ -465,6 +475,11 @@
     function checkIfValidFileFormat(filename) {
         const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx|mp3|mp4|wav)$/)
         return regex.test(filename)
+    }
+
+    function checkIfImage(filename){
+        const regex = new RegExp(/[^\s]+(.*?).(jpe?g|png|gif|svg)$/)
+        return regex.test(filename);
     }
 
     function checkIfValidFileSize(file) {
@@ -607,6 +622,20 @@
         }
     }
 
+    function deleteThingiverseFileById(id, itemId, isImage){
+
+        const url = isImage? `https://api.thingiverse.com/things/${itemId}/images/${id}` : `https://api.thingiverse.com/things/${itemId}/files/${id}`
+
+        let xhr = new XMLHttpRequest();
+        xhr.open('DELETE', url, true);
+        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
+        xhr.send()
+        xhr.onload = () => {
+            thingiverseIdMap = thingiverseIdMap.filter(elem => elem.id !== id)
+        }
+    }
+
     /**
      * Synchronous function to inform Thingiverse that you want to attach a file to an item.
      * @param file File object that should be uploaded.
@@ -672,7 +701,6 @@
         }
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401) ) {
-                const resAws = JSON.parse(xhr.response);
                 informThingiversePostUpload(awsInfo.fields.success_action_redirect, file.name);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status !== 200|| xhr.status !== 401)) {
@@ -698,6 +726,7 @@
                 const progressbar = document.getElementById(`progress-${filename}`);
                 setProgressbarStyleComplete(progressbar);
                 console.log(res);
+                thingiverseIdMap.push({id: res.id, name: res.name});
 
             } else if (xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200) {
                 console.log("Error occurred:");
@@ -866,7 +895,9 @@
     let instructions = "";
     let thingiverse;
     let thingiverseItemUrl = "";
+    let thingiverseIdMap = [];
     let isEdit = false;
+
     init();
 
 </script>
