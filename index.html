@@ -265,9 +265,14 @@
         }
     }
 
-    function init(data) {
+    async function init(data) {
+        await fetch("https://res.cloudinary.com/dowxznli2/raw/upload/v1685973374/test_vmgndw.json")
+            .then(response => response.json())
+            .then(data => {
+                thingiverse = Object.values(data)[0];
+            });
         if (data) {
-            thingiverseApiToken = data.token;
+
             if (data.title) {
                 isEdit = true;
                 title = data.title;
@@ -525,7 +530,7 @@
      * @return {string|undefined} Returns the itemId when successful and undefined if the response status was not 200
      */
     function createThingiverseItem(){
-        if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
+        if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
             console.log("Missing credentials");
             return;
         }
@@ -544,7 +549,7 @@
         let xhr = new XMLHttpRequest();
         xhr.open('POST', url, false);
         xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
-        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.send(JSON.stringify(item))
 
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
@@ -561,7 +566,7 @@
     }
 
     function patchThingiverseItem(itemId){
-        if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
+        if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
             console.log("Missing credentials");
             return;
         } else if (!itemId) {
@@ -581,7 +586,7 @@
         let xhr = new XMLHttpRequest();
         xhr.open('PATCH', url, false);
         xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
-        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.send(JSON.stringify(item))
 
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
@@ -603,7 +608,7 @@
      * @return {any|undefined} returns the metadata needed to access the bucket if successful and undefined if status not 200.
      */
     function informThingiversePreUpload(file, itemId){
-        if (thingiverseApiToken === undefined || thingiverseApiToken === null || thingiverseApiToken === "") {
+        if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
             console.log("Missing credentials");
             return;
         }
@@ -611,10 +616,10 @@
         const url = `https://api.thingiverse.com/things/${itemId}/files`;
         const body = { "filename": file.name };
 
-        let xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.open('POST', url, false);
         xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
-        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.send(JSON.stringify(body));
 
         if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
@@ -679,7 +684,7 @@
     function informThingiversePostUpload(redirectUrl, filename){
         let xhr = new XMLHttpRequest();
         xhr.open("POST", redirectUrl, true);
-        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverseApiToken);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.onload = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
                 const res = JSON.parse(xhr.response);
@@ -712,7 +717,7 @@
         // todo allow retry?
         setErrorMaxFile("Oops! Something went wrong, try again later.");
         console.log("Error occurred during upload to AWS:");
-        console.log(response)
+        console.log(response);
     }
 
     /* === HTML and CSS updates === */
@@ -851,7 +856,7 @@
     let category = "Learning";
     let description = "";
     let instructions = "";
-    let thingiverseApiToken;
+    let thingiverse;
     let thingiverseItemUrl = "";
     let isEdit = false;
     init();
