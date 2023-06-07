@@ -32,7 +32,7 @@
             box-shadow: 0 1em 2em rgba(0,0,0,0.30), 0 0.6em 0.5em rgba(0,0,0,0.22);
             border-radius: 0.5em;
             background-color: white;
-            max-height: 30em;
+            max-height: 35em;
             overflow: auto;
             margin-bottom: 1em;
         }
@@ -52,7 +52,7 @@
         }
 
         .form-control {
-            margin-top: 0.5em;
+            margin-top: 1em;
         }
 
         .custom-file-label {
@@ -191,6 +191,16 @@
             padding: 0.3em;
             font-size: 1em;
             color: #0c3214;
+        }
+
+        .fa-redo {
+            padding: 0.3em;
+            font-size: 1.4em;
+        }
+
+        .fa-redo:hover {
+            cursor: pointer;
+            opacity: 0.9;
         }
 
         .error {
@@ -435,8 +445,7 @@
         document.getElementById(id).remove();
         const thingiverseId = thingiverseIdMap.filter(elem => elem.name === filename).map(elem => elem.id);
         if (thingiverseId.length > 0 && thingiverseItemUrl !== "") {
-            const split = thingiverseItemUrl.split(':')
-            const itemId = split[split.length-1]
+            const itemId = getItemId()
             const isImage = checkIfImage(filename)
             deleteThingiverseFileById(thingiverseId, itemId, isImage);
         }
@@ -505,17 +514,21 @@
             if (isEdit && !file.name) continue; // file already uploaded
 
             if (checkIfThingiverseFile(file.name)){
-                const progressbar = document.getElementById(`progress-${file.name}`);
-                progressbar.style.width = `7%`; // default progress to indicate background action to user
-                const awsInfo = informThingiversePreUpload(file, itemId);
-                if (!awsInfo) return; // Guard: could not upload file
-
-                createFileAws(awsInfo, file);
+                uploadFile(file, itemId)
 
             } else {
                 cloudinaryFiles.push(file);
             }
         }
+    }
+
+    async function uploadFile(file, itemId){
+        const progressbar = document.getElementById(`progress-${file.name}`);
+        progressbar.style.width = `7%`; // default progress to indicate background action to user
+        const awsInfo = informThingiversePreUpload(file, itemId);
+        if (!awsInfo) return; // Guard: could not upload file
+
+        await createFileAws(awsInfo, file);
     }
 
     function readFileAsUrl(file) {
@@ -531,7 +544,6 @@
             fileReader.onload = _ => {
                 resolve(fileReader.result);
             }
-
             fileReader.onerror = _ => {
                 reject("Could not Read");
             }
@@ -553,6 +565,7 @@
      */
     function createThingiverseItem(){
         if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
+            setErrorMaxFile("Status 401: Upload can not be completed at this moment. Please inform your system administrator.");
             console.log("Missing credentials");
             return;
         }
@@ -690,21 +703,30 @@
         let xhr = new XMLHttpRequest();
         xhr.open('POST', url, true);
         xhr.upload.onprogress = (evt) => {
+
             if (evt.lengthComputable) {
+                const progressbar = document.getElementById(`progress-${file.name}`);
+                if (xhr.status !== 200) {
+                    xhr.abort();
+
+                    return;
+                }
                 let percentComplete = parseInt((evt.loaded / file.size) * 100);
                 if (percentComplete > 7) { // account for default progress when starting the upload
-                    const progressbar = document.getElementById(`progress-${file.name}`);
+
                     progressbar.style.width = `${percentComplete}%`;
                 }
 
             }
         }
+
+
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401) ) {
                 informThingiversePostUpload(awsInfo.fields.success_action_redirect, file.name);
 
-            } else if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status !== 200|| xhr.status !== 401)) {
-                handleFileUploadError(file, xhr.response);
+            } else if (xhr.readyState === XMLHttpRequest.DONE) {
+                 handleFileUploadError(file, xhr.response); //todo div = null
             }
         }
 
@@ -745,15 +767,27 @@
     function handleFileUploadError(file, response) {
         const index = fileList.indexOf(file);
         fileList.splice(index, 1);
-        const divFile = document.getElementById(`div-file-${file.name}`)
+        failedUploads.push(file);
+
+        const icon = document.getElementById(`icon-${file.name}`);
+        icon.className = "";
+        icon.classList.add('fas', 'fa-redo');
+        icon.onclick = () => retryUpload(file);
         const iconError = document.createElement('i');
         iconError.classList.add('fas', 'fa-exclamation-triangle');
-        divFile.appendChild(iconError);
-        document.getElementById(`progress-${file.name}`).style.width = '1%';
+        iconError.id = 'icon-error-'+file.name;
+        document.getElementById(`div-file-${file.name}`).appendChild(iconError);
+        setProgressbarStyleError(document.getElementById(`progress-${file.name}`))
         // todo allow retry?
         setErrorMaxFile("Oops! Something went wrong, try again later.");
         console.log("Error occurred during upload to AWS:");
         console.log(response);
+    }
+
+    function retryUpload(file){
+        const itemId = getItemId()
+        resetUploadItem(file);
+        uploadFile(file, itemId)
     }
 
     /* === HTML and CSS updates === */
@@ -785,11 +819,12 @@
 
         let icon = document.createElement('i');
         icon.classList.add('far', 'fa-file');
+        icon.id = 'icon-'+filename;
         let divFile = document.createElement('div');
         divFile.classList.add('file');
         let divFileName = document.createElement('div');
         divFileName.classList.add('file-name');
-        divFileName.id = 'div-file'+filename;
+        divFileName.id = 'div-file-'+filename;
         let pName = document.createElement('p');
         pName.innerText = shortenedName;
 
@@ -833,6 +868,22 @@
         document.getElementById('divUploadItems').append(divUploaded);
     }
 
+    function resetUploadItem(file) {
+        const icon = document.getElementById(`icon-${file.name}`)
+        icon.className = "";
+        icon.classList.add('far', 'fa-file');
+        icon.onclick = undefined;
+
+        const iconError = document.getElementById(`icon-error-${file.name}`);
+        document.getElementById(`div-file-${file.name}`).removeChild(iconError);
+
+        const progressbar = document.getElementById(`progress-${file.name}`);
+        progressbar.className = "";
+        progressbar.classList.add('progress-bar', 'bg-success');
+
+        fileList.append(file);
+    }
+
     function shortenFilename(filename, length) {
         let split = filename.split('.');
         let extension = split[split.length-1];
@@ -842,6 +893,12 @@
 
     function setProgressbarStyleComplete(progressbar) {
         progressbar.classList.remove('progress-bar-striped','progress-bar-animated');
+    }
+
+    function setProgressbarStyleError(progressbar) {
+        progressbar.className =""
+        progressbar.classList.add('progress-bar', 'bg-danger');
+        progressbar.style.width = "1%"
     }
 
     function resetErrors() {
@@ -884,8 +941,14 @@
         tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
     }
 
+    function getItemId(){
+        const split = thingiverseItemUrl.split(':')
+        return  split[split.length-1]
+    }
+
     /* === init Plugin === */
     let fileList = [];
+    let failedUploads = [];
     let cloudinaryFiles = [];
     let titleImage;
     let altDescription ="";
