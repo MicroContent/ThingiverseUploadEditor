@@ -703,30 +703,23 @@
         let xhr = new XMLHttpRequest();
         xhr.open('POST', url, true);
         xhr.upload.onprogress = (evt) => {
-
             if (evt.lengthComputable) {
                 const progressbar = document.getElementById(`progress-${file.name}`);
-                if (xhr.status !== 200) {
-                    xhr.abort();
 
-                    return;
-                }
                 let percentComplete = parseInt((evt.loaded / file.size) * 100);
                 if (percentComplete > 7) { // account for default progress when starting the upload
-
                     progressbar.style.width = `${percentComplete}%`;
                 }
 
             }
         }
 
-
         xhr.onreadystatechange = () => {
             if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401) ) {
                 informThingiversePostUpload(awsInfo.fields.success_action_redirect, file.name);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE) {
-                 handleFileUploadError(file, xhr.response); //todo div = null
+                handleFileUploadError(file, xhr.response);
             }
         }
 
@@ -769,17 +762,17 @@
         fileList.splice(index, 1);
         failedUploads.push(file);
 
-        const icon = document.getElementById(`icon-${file.name}`);
-        icon.className = "";
-        icon.classList.add('fas', 'fa-redo');
-        icon.onclick = () => retryUpload(file);
+        const iconRedo = document.getElementById(`icon-${file.name}`);
+        iconRedo.className = "";
+        iconRedo.classList.add('fas', 'fa-redo');
+        iconRedo.onclick = () => retryUpload(file);
         const iconError = document.createElement('i');
         iconError.classList.add('fas', 'fa-exclamation-triangle');
         iconError.id = 'icon-error-'+file.name;
         document.getElementById(`div-file-${file.name}`).appendChild(iconError);
         setProgressbarStyleError(document.getElementById(`progress-${file.name}`))
-        // todo allow retry?
-        setErrorMaxFile("Oops! Something went wrong, try again later.");
+
+        setErrorMaxFile("Oops! Something went wrong, some files could not be uploaded.");
         console.log("Error occurred during upload to AWS:");
         console.log(response);
     }
@@ -881,7 +874,7 @@
         progressbar.className = "";
         progressbar.classList.add('progress-bar', 'bg-success');
 
-        fileList.append(file);
+        fileList.push(file);
     }
 
     function shortenFilename(filename, length) {
