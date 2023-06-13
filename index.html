@@ -290,13 +290,13 @@
             });
         if (data) {
 
-            if (data.title) {
+            if (data.thingUrl) {
                 isEdit = true;
-                title = data.title;
+                thingiverseItemUrl = data.thingUrl;
             }
+            title = data.title ? data.title : ""
             description = data.description? data.description : "";
             instructions = data.instructions? data.instructions : "";
-            thingiverseItemUrl = data.thingUrl? data.thingUrl : "";
             fileList = data.fileNames? data.fileNames : [];
             cloudinaryFiles = data.mediaUrlArray? data.mediaUrlArray : [];
             titleImage = data.imageUrl? data.imageUrl: "";
