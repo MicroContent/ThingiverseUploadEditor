@@ -482,12 +482,9 @@
     });
 
     function handleRemoveClick(documentId, filename) {
-        const thingiverseId = thingiverseIdMap.filter(elem => elem.name === filename).map(elem => elem.id);
-        if (thingiverseId.length > 0 && thingiverseItemUrl !== "") {
+        if (isEdit) {
             $('#exampleModal').modal('show');
-            console.log("edit")
         } else {
-            console.log("new")
             removeFile(documentId, filename);
         }
     }
