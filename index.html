@@ -300,7 +300,6 @@
             fileList = data.fileNames? data.fileNames : [];
             cloudinaryFiles = data.mediaUrlArray? data.mediaUrlArray : [];
             titleImage = data.imageUrl? data.imageUrl: "";
-
             thingiverseIdMap = data.thingiverseIdMap? data.thingiverseIdMap : [];
 
             for (const filename of fileList) {
@@ -329,9 +328,7 @@
                     if you would like to upload files to your own account, please upload them to <a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a> directly.
                     <br><span id="close-txt" onclick="toggleTooltip()">Dismiss</span></span>
             </div>
-
         </div>
-
 
         <form class="needs-validation" id="form">
             <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title*" type="text" required>
@@ -357,9 +354,8 @@
                       class="form-control"  aria-labelledby="labelDescription"
                       placeholder="Add instructions for printing to the Thing you want to upload to Thingiverse"></textarea>
             <label id="labelInstructions" for="inputInstructions">Instructions</label>
-
-
         </form>
+
     </div>
 
     <div id="FileUpload">
@@ -938,6 +934,7 @@
 
     function setProgressbarStyleComplete(progressbar) {
         progressbar.classList.remove('progress-bar-striped','progress-bar-animated');
+        progressbar.style.width = "100%"
     }
 
     function setProgressbarStyleError(progressbar) {
