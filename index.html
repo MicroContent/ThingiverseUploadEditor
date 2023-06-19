@@ -306,6 +306,7 @@
                 const isAlreadyUploaded = true;
                 renderUploadItem(filename, isAlreadyUploaded)
             }
+            updateNrOfFilesString();
             document.getElementById('inputTitle').value = title;
             document.getElementById('inputDescription').value = description;
             document.getElementById('inputInstructions').value = instructions;
@@ -339,7 +340,7 @@
             </div>
 
             <div class="input-group">
-                <input type="file" id="inputGroupFile">
+                <input type="file" accept="image/*" id="inputGroupFile">
                 <label class="custom-file-label" for="inputGroupFile" id="inputGroupFileLabel">Choose Preview Image</label>
             </div>
             <input id="inputAltDesc" class="form-control" placeholder="alt. description" type="text">
