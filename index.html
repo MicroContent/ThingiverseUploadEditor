@@ -461,6 +461,9 @@
             if (validateFile(file)) {
                 fileList.push(file);
                 renderUploadItem(file.name);
+                if (!checkIfThingiverseFile(file.name)) {
+                    cloudinaryFiles.push(file);
+                }
             }
         }
         updateNrOfFilesString();
@@ -565,8 +568,6 @@
             if (checkIfThingiverseFile(file.name)){
                 uploadFile(file, itemId)
 
-            } else {
-                cloudinaryFiles.push(file);
             }
         }
     }
