@@ -575,11 +575,13 @@
     async function uploadFile(file, itemId){
         const progressbar = document.getElementById(`progress-${file.name}`);
         progressbar.style.width = `7%`; // default progress to indicate background action to user
+
         const awsInfo = informThingiversePreUpload(file, itemId);
         if (!awsInfo) return; // Guard: could not upload file
 
         await createFileAws(awsInfo, file);
     }
+
 
     function readFileAsUrl(file) {
         if (!file) {
@@ -736,7 +738,7 @@
      * @param file File object that should be uploaded
      */
     async function createFileAws(awsInfo, file){
-        const url = awsInfo.action.substring(0, awsInfo.action.length-1);
+        const url = awsInfo.action;
 
         let formData = new FormData();
         formData.append('AWSAccessKeyId', awsInfo.fields.AWSAccessKeyId);
