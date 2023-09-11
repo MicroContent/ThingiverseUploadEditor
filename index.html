@@ -509,13 +509,13 @@
         if(!file){
             setErrorMaxFile("Oops! Something went wrong.")
             return false;
-        } else if (fileList.length >= 10) {
-            setErrorMaxFile("You can only upload a maximum of 10 files!")
+        } else if (fileList.length >= 20) {
+            setErrorMaxFile("You can only upload a maximum of 20 files!")
             return false;
         }else if (!checkIfValidFileFormat(file.name)) {
             setErrorMsgFormat(`${file.name}: not a valid file format\n`)
             return false;
-        } else if (!checkIfValidFileSize(file)) {
+        } else if (!checkIfThingiverseFile(file.name) &&!checkIfValidFileSize(file)) {
             setErrorMaxFile("File size cannot exceed 10MB!")
             return false;
         }
@@ -529,12 +529,12 @@
      * @return {boolean}
      */
     function checkIfThingiverseFile(filename) {
-        const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx)$/)
+        const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx|gcode)$/)
         return regex.test(filename);
     }
 
     function checkIfValidFileFormat(filename) {
-        const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx|mp3|mp4|wav)$/)
+        const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx|gcode|mp3|mp4|wav)$/)
         return regex.test(filename)
     }
 
