@@ -530,17 +530,17 @@
      */
     function checkIfThingiverseFile(filename) {
         const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx|gcode)$/)
-        return regex.test(filename);
+        return regex.test(filename.toLowerCase());
     }
 
     function checkIfValidFileFormat(filename) {
         const regex = new RegExp(/[^\s]+(.*?).(stl|obj|thing|scad|amf|dae|3ds|x3d|blend|ply|dxf|ai|cdr|ps|eps|epsi|sch|brd|jpe?g|png|gif|svg|txt|doc|docx|gcode|mp3|mp4|wav)$/)
-        return regex.test(filename)
+        return regex.test(filename.toLowerCase())
     }
 
     function checkIfImage(filename){
         const regex = new RegExp(/[^\s]+(.*?).(jpe?g|png|gif|svg)$/)
-        return regex.test(filename);
+        return regex.test(filename.toLowerCase());
     }
 
     function checkIfValidFileSize(file) {
