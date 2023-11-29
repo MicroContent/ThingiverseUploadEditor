@@ -585,8 +585,6 @@
 
         if (!itemId) return; // Guard: could not create item
 
-        publishThingiverseItem(itemId);
-
         for (const file of files) {
             if (isEdit && !file.name) continue; // file already uploaded
 
@@ -595,6 +593,8 @@
 
             }
         }
+
+        publishThingiverseItem(itemId);
     }
 
     async function uploadFile(file, itemId) {
