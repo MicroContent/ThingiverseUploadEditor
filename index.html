@@ -348,9 +348,12 @@
 
             <textarea id="inputDescription" maxlength="200" rows="3"
                       class="form-control"  aria-labelledby="labelDescription"
-                      placeholder="Add a text to describe the Thing you want to upload to Thingiverse"></textarea>
+                      placeholder="Add a text to describe the Thing you want to upload to Thingiverse*" required ></textarea>
             <label id="labelDescription" for="inputDescription">Description</label>
-
+            <small>*required</small>
+            <div class="invalid-feedback">
+                Please add a description!
+            </div>
             <textarea id="inputInstructions" maxlength="200" rows="3"
                       class="form-control"  aria-labelledby="labelDescription"
                       placeholder="Add instructions for printing to the Thing you want to upload to Thingiverse"></textarea>
