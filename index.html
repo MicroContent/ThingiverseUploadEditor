@@ -6,8 +6,10 @@
     <script src="https://cdn.jsdelivr.net/gh/MicroContent/ThingiverseUploadEditor@main/seamlessjs/seamless.child.min.js"></script>
     <!-- jQuery library -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+          integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/css/bootstrap.min.css"
+          integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
 
     <style>
@@ -15,7 +17,7 @@
             background-color: whitesmoke;
             border-bottom: 0 solid black;
             display: flex;
-            justify-content:center;
+            justify-content: center;
             align-items: center;
         }
 
@@ -30,7 +32,7 @@
 
         .wrapper {
             padding: 0.5em;
-            box-shadow: 0 1em 2em rgba(0,0,0,0.30), 0 0.6em 0.5em rgba(0,0,0,0.22);
+            box-shadow: 0 1em 2em rgba(0, 0, 0, 0.30), 0 0.6em 0.5em rgba(0, 0, 0, 0.22);
             border-radius: 0.5em;
             background-color: white;
             max-height: 35em;
@@ -58,6 +60,10 @@
 
         .form-control {
             margin-top: 1em;
+        }
+
+        label {
+            margin-bottom: 0 !important;
         }
 
         .custom-file-label {
@@ -89,7 +95,7 @@
             z-index: 2;
         }
 
-         .tooltiptext {
+        .tooltiptext {
             max-width: 30em;
             background-color: #555;
             color: #fff;
@@ -99,7 +105,7 @@
             position: absolute;
         }
 
-         .tooltiptext::after {
+        .tooltiptext::after {
             content: "";
             position: absolute;
             border-width: 5px;
@@ -107,10 +113,10 @@
             border-color: #555 transparent transparent transparent;
         }
 
-         #close-txt {
-             text-decoration: underline;
-             cursor: pointer;
-         }
+        #close-txt {
+            text-decoration: underline;
+            cursor: pointer;
+        }
 
         /* === Upload Box === */
         .upload {
@@ -141,11 +147,12 @@
         .upload-button {
             height: 2.3em;
             background-color: #EDEDED;
-            box-shadow: 0 0.3em 0.5em rgba(0,0,0,0.22);
+            box-shadow: 0 0.3em 0.5em rgba(0, 0, 0, 0.22);
             border: 0;
             border-radius: 0.5em;
             padding: 0 0.3em 0 0.5em;
         }
+
         .upload-button:hover {
             cursor: pointer;
             opacity: 0.8;
@@ -163,11 +170,13 @@
             justify-content: flex-start;
             align-items: center;
         }
+
         .file {
             display: flex;
             width: 100%;
             flex-direction: column;
         }
+
         .file-name {
             display: flex;
             flex-direction: row;
@@ -236,15 +245,15 @@
         allowStyleInjection: true
     });
 
-    parent.receive(function(data) {
-       switch (data.type) {
-           case 'setContent':
-               window.data = data.main[0];
-               init(window.data);
-               break;
-           case 'getContent':
+    parent.receive(function (data) {
+        switch (data.type) {
+            case 'setContent':
+                window.data = data.main[0];
+                init(window.data);
+                break;
+            case 'getContent':
                 sendToParent();
-       }
+        }
     });
 
     window.sendToParent = function (event) {
@@ -295,12 +304,12 @@
                 thingiverseItemUrl = data.thingUrl;
             }
             title = data.title ? data.title : ""
-            description = data.description? data.description : "";
-            instructions = data.instructions? data.instructions : "";
-            fileList = data.fileNames? data.fileNames : [];
-            cloudinaryFiles = data.mediaUrlArray? data.mediaUrlArray : [];
-            titleImage = data.imageUrl? data.imageUrl: "";
-            thingiverseIdMap = data.thingiverseIdMap? data.thingiverseIdMap : [];
+            description = data.description ? data.description : "";
+            instructions = data.instructions ? data.instructions : "";
+            fileList = data.fileNames ? data.fileNames : [];
+            cloudinaryFiles = data.mediaUrlArray ? data.mediaUrlArray : [];
+            titleImage = data.imageUrl ? data.imageUrl : "";
+            thingiverseIdMap = data.thingiverseIdMap ? data.thingiverseIdMap : [];
 
             for (const filename of fileList) {
                 const isAlreadyUploaded = true;
@@ -325,37 +334,46 @@
 
             <div class="tool-tip" id="tooltip">
                 <span class="tooltiptext">This plugin helps you upload 3D printing files and all associated data.
-                    The files will be uploaded to the <a href="https://www.thingiverse.com/tatabooks/designs" target="_blank">tatabooks</a> account by default,
-                    if you would like to upload files to your own account, please upload them to <a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a> directly.
+                    The files will be uploaded to the <a href="https://www.thingiverse.com/tatabooks/designs"
+                                                         target="_blank">tatabooks</a> account by default,
+                    if you would like to upload files to your own account, please upload them to <a
+                            href="https://www.thingiverse.com/" target="_blank">Thingiverse</a> directly.
                     <br><span id="close-txt" onclick="toggleTooltip()">Dismiss</span></span>
             </div>
         </div>
 
         <form class="needs-validation" id="form">
-            <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title*" type="text" required>
+
+            <input id="inputTitle" class="form-control" maxlength="60" aria-labelledby="helpTitle" placeholder="Title*"
+                   type="text" required>
             <label class="hint" id="helpTitle" for="inputTitle">Enter a title for the Thing (max. 60 characters)</label>
             <small>*required</small>
             <div class="invalid-feedback">
                 Please add a title!
             </div>
 
-            <div class="input-group">
+
+            <div class="input-group form-control">
                 <input type="file" accept="image/*" id="inputGroupFile">
-                <label class="custom-file-label" for="inputGroupFile" id="inputGroupFileLabel">Choose Preview Image</label>
+                <label class="custom-file-label" for="inputGroupFile" id="inputGroupFileLabel">Choose Preview
+                    Image</label>
             </div>
             <input id="inputAltDesc" class="form-control" placeholder="alt. description" type="text">
-            <label class="hint" id="helpAlt" for="inputAltDesc">Please add an alt. description for your title image</label>
+            <label class="hint" id="helpAlt" for="inputAltDesc">Please add an alt. description for your title
+                image</label>
 
             <textarea id="inputDescription" maxlength="200" rows="3"
-                      class="form-control"  aria-labelledby="labelDescription"
-                      placeholder="Add a text to describe the Thing you want to upload to Thingiverse*" required ></textarea>
+                      class="form-control" aria-labelledby="labelDescription"
+                      placeholder="Add a text to describe the Thing you want to upload to Thingiverse*"
+                      required></textarea>
             <label id="labelDescription" for="inputDescription">Description</label>
             <small>*required</small>
             <div class="invalid-feedback">
                 Please add a description!
             </div>
+
             <textarea id="inputInstructions" maxlength="200" rows="3"
-                      class="form-control"  aria-labelledby="labelDescription"
+                      class="form-control" aria-labelledby="labelDescription"
                       placeholder="Add instructions for printing to the Thing you want to upload to Thingiverse"></textarea>
             <label id="labelInstructions" for="inputInstructions">Instructions</label>
         </form>
@@ -370,11 +388,13 @@
                 <button class="upload-button" onclick="openFileExplorer()">Browse</button>
                 <input type="file" id="selectFile" multiple>
                 <div class="break"></div>
-                <small class="hint-formats">Allowed file formats:<br>stl, obj, thing, scad, amf, dae, 3ds, x3d, blend, ply, dxf, ai, cdr, ps, eps, epsi, sch, brd, jpg, png, gif, svg, txt, doc, docx, mp3, wav, mp4</small>
+                <small class="hint-formats">Allowed file formats:<br>stl, obj, thing, scad, amf, dae, 3ds, x3d, blend,
+                    ply, dxf, ai, cdr, ps, eps, epsi, sch, brd, jpg, png, gif, svg, txt, doc, docx, mp3, wav,
+                    mp4</small>
             </div>
             <div class="error" id="errorMaxFile" style="display: none"></div>
             <div class="error" id="errorFileFormat" style="display: none"></div>
-            <p>No. of files: <strong id="nrFiles">0</strong> </p>
+            <p>No. of files: <strong id="nrFiles">0</strong></p>
 
             <div id="divUploadItems"></div>
         </div>
@@ -383,7 +403,8 @@
     <button type="submit" class="btn btn-success" onclick="uploadFiles(fileList)">Upload</button>
 
     <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -448,17 +469,16 @@
     });
 
 
-
     function openFileExplorer() {
         const inputFile = document.getElementById('selectFile');
         inputFile.click();
-        inputFile.onchange = function() {
+        inputFile.onchange = function () {
             let files = document.getElementById('selectFile').files;
             addFiles(files);
         };
     }
 
-    function addFiles(files){
+    function addFiles(files) {
         resetErrors();
         for (const file of files) {
             if (validateFile(file)) {
@@ -475,10 +495,10 @@
 
     $(document).on('click', '.fa-times', function () {
         let filename = $(this).attr("id").replace('icon-close-', "");
-        $("#exampleModal").attr("caller-id", "uploaded-"+filename);
+        $("#exampleModal").attr("caller-id", "uploaded-" + filename);
     });
 
-    $(document).on('click', '#btn-delete',  () => {
+    $(document).on('click', '#btn-delete', () => {
         let caller = $("#btn-delete").closest(".modal").attr("caller-id");
         removeFile(caller);
         $('#exampleModal').modal('hide');
@@ -492,7 +512,7 @@
         }
     }
 
-    function removeFile(documentId, filename){
+    function removeFile(documentId, filename) {
         if (!filename) {
             filename = documentId.replace('uploaded-', '');
         }
@@ -509,16 +529,16 @@
     }
 
     function validateFile(file) {
-        if(!file){
+        if (!file) {
             setErrorMaxFile("Oops! Something went wrong.")
             return false;
         } else if (fileList.length >= 50) {
             setErrorMaxFile("You can only upload a maximum of 50 files!")
             return false;
-        }else if (!checkIfValidFileFormat(file.name)) {
+        } else if (!checkIfValidFileFormat(file.name)) {
             setErrorMsgFormat(`${file.name}: not a valid file format\n`)
             return false;
-        } else if (!checkIfThingiverseFile(file.name) &&!checkIfValidFileSize(file)) {
+        } else if (!checkIfThingiverseFile(file.name) && !checkIfValidFileSize(file)) {
             setErrorMaxFile("File size cannot exceed 10MB!")
             return false;
         }
@@ -541,7 +561,7 @@
         return regex.test(filename.toLowerCase())
     }
 
-    function checkIfImage(filename){
+    function checkIfImage(filename) {
         const regex = new RegExp(/[^\s]+(.*?).(jpe?g|png|gif|svg)$/)
         return regex.test(filename.toLowerCase());
     }
@@ -555,9 +575,9 @@
 
         let itemId;
 
-        if (isEdit){
+        if (isEdit) {
             const urlComps = thingiverseItemUrl.split(":")
-            itemId = urlComps[urlComps.length-1];
+            itemId = urlComps[urlComps.length - 1];
             patchThingiverseItem(itemId);
         } else {
             itemId = createThingiverseItem();
@@ -568,14 +588,14 @@
         for (const file of files) {
             if (isEdit && !file.name) continue; // file already uploaded
 
-            if (checkIfThingiverseFile(file.name)){
+            if (checkIfThingiverseFile(file.name)) {
                 uploadFile(file, itemId)
 
             }
         }
     }
 
-    async function uploadFile(file, itemId){
+    async function uploadFile(file, itemId) {
         const progressbar = document.getElementById(`progress-${file.name}`);
         progressbar.style.width = `7%`; // default progress to indicate background action to user
 
@@ -595,7 +615,7 @@
 
         const fileReader = new FileReader();
 
-        return new Promise( (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             fileReader.onload = _ => {
                 resolve(fileReader.result);
             }
@@ -618,7 +638,7 @@
      *
      * @return {string|undefined} Returns the itemId when successful and undefined if the response status was not 200
      */
-    function createThingiverseItem(){
+    function createThingiverseItem() {
         if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
             setErrorMaxFile("Status 401: Upload can not be completed at this moment. Please inform your system administrator.");
             console.log("Missing credentials");
@@ -628,17 +648,17 @@
         const url = "https://api.thingiverse.com/things";
         const item = {
             "name": title,
-            "category":category,
-            "tags":[], // todo tags = keywords?
+            "category": category,
+            "tags": [], // todo tags = keywords?
             "description": description,
             "instructions": instructions,
-            "is_wip":false,
-            "license":"cc"
+            "is_wip": false,
+            "license": "cc"
         }
 
         let xhr = new XMLHttpRequest();
         xhr.open('POST', url, false);
-        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.send(JSON.stringify(item))
 
@@ -655,7 +675,7 @@
         }
     }
 
-    function patchThingiverseItem(itemId){
+    function patchThingiverseItem(itemId) {
         if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
             console.log("Missing credentials");
             return;
@@ -667,15 +687,15 @@
         const url = `https://api.thingiverse.com/things/${itemId}`;
         const item = {
             "name": title,
-            "category":category,
-            "tags":[], // todo tags = keywords?
+            "category": category,
+            "tags": [], // todo tags = keywords?
             "description": description,
             "instructions": instructions,
         }
 
         let xhr = new XMLHttpRequest();
         xhr.open('PATCH', url, false);
-        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.send(JSON.stringify(item))
 
@@ -690,13 +710,13 @@
         }
     }
 
-    function deleteThingiverseFileById(id, itemId, isImage){
+    function deleteThingiverseFileById(id, itemId, isImage) {
 
-        const url = isImage? `https://api.thingiverse.com/things/${itemId}/images/${id}` : `https://api.thingiverse.com/things/${itemId}/files/${id}`
+        const url = isImage ? `https://api.thingiverse.com/things/${itemId}/images/${id}` : `https://api.thingiverse.com/things/${itemId}/files/${id}`
 
         let xhr = new XMLHttpRequest();
         xhr.open('DELETE', url, true);
-        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.send()
         xhr.onload = () => {
@@ -711,18 +731,18 @@
      *
      * @return {any|undefined} returns the metadata needed to access the bucket if successful and undefined if status not 200.
      */
-    function informThingiversePreUpload(file, itemId){
+    function informThingiversePreUpload(file, itemId) {
         if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
             console.log("Missing credentials");
             return;
         }
 
         const url = `https://api.thingiverse.com/things/${itemId}/files`;
-        const body = { "filename": file.name };
+        const body = {"filename": file.name};
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', url, false);
-        xhr.setRequestHeader("Content-Type","application/json; charset=utf-8");
+        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.send(JSON.stringify(body));
 
@@ -740,7 +760,7 @@
      * @param awsInfo Metadata needed to access the AWS bucket
      * @param file File object that should be uploaded
      */
-    async function createFileAws(awsInfo, file){
+    async function createFileAws(awsInfo, file) {
         const url = awsInfo.action;
 
         let formData = new FormData();
@@ -770,7 +790,7 @@
         }
 
         xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401) ) {
+            if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 401)) {
                 informThingiversePostUpload(awsInfo.fields.success_action_redirect, file.name);
 
             } else if (xhr.readyState === XMLHttpRequest.DONE) {
@@ -786,12 +806,12 @@
      * @param redirectUrl url provided by Thingiverse to finalize the fileupload
      * @param filename name of the file that was just uploaded
      */
-    function informThingiversePostUpload(redirectUrl, filename){
+    function informThingiversePostUpload(redirectUrl, filename) {
         let xhr = new XMLHttpRequest();
         xhr.open("POST", redirectUrl, true);
         xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
         xhr.onload = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200 ) {
+            if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
                 const res = JSON.parse(xhr.response);
                 const progressbar = document.getElementById(`progress-${filename}`);
                 setProgressbarStyleComplete(progressbar);
@@ -823,7 +843,7 @@
         iconRedo.onclick = () => retryUpload(file);
         const iconError = document.createElement('i');
         iconError.classList.add('fas', 'fa-exclamation-triangle');
-        iconError.id = 'icon-error-'+file.name;
+        iconError.id = 'icon-error-' + file.name;
         document.getElementById(`div-file-${file.name}`).appendChild(iconError);
         setProgressbarStyleError(document.getElementById(`progress-${file.name}`))
 
@@ -832,7 +852,7 @@
         console.log(response);
     }
 
-    function retryUpload(file){
+    function retryUpload(file) {
         const itemId = getItemId()
         resetUploadItem(file);
         uploadFile(file, itemId)
@@ -856,35 +876,35 @@
      *      </div>
      *  </div>
      */
-    function renderUploadItem(filename, isAlreadyUploaded){
+    function renderUploadItem(filename, isAlreadyUploaded) {
 
         let shortenedName = shortenFilename(filename, 13);
         let isThingiverse = checkIfThingiverseFile(filename);
 
         let divUploaded = document.createElement('div');
         divUploaded.classList.add('uploaded')
-        divUploaded.id = 'uploaded-'+filename;
+        divUploaded.id = 'uploaded-' + filename;
 
         let icon = document.createElement('i');
         icon.classList.add('far', 'fa-file');
-        icon.id = 'icon-'+filename;
+        icon.id = 'icon-' + filename;
         let divFile = document.createElement('div');
         divFile.classList.add('file');
         let divFileName = document.createElement('div');
         divFileName.classList.add('file-name');
-        divFileName.id = 'div-file-'+filename;
+        divFileName.id = 'div-file-' + filename;
         let pName = document.createElement('p');
         pName.innerText = shortenedName;
 
         let iconClose = document.createElement('i');
-        iconClose.id = 'icon-close-'+filename;
+        iconClose.id = 'icon-close-' + filename;
         iconClose.classList.add('fas', 'fa-times');
         iconClose.onclick = () => handleRemoveClick(divUploaded.id, filename);
 
         if (!isThingiverse) {
             let iconInfo = document.createElement('i');
             iconInfo.classList.add('fas', 'fa-info-circle');
-            iconInfo.id = 'icon-info-'+filename;
+            iconInfo.id = 'icon-info-' + filename;
             iconInfo.title = "This file will ne uploaded using another service when you save the card."
             divFileName.append(pName, iconInfo, iconClose);
         } else {
@@ -897,17 +917,17 @@
         if (isAlreadyUploaded) {
             divProgressbar.classList.add("progress-bar", "bg-success")
             divProgressbar.style.width = "100%"
-            divProgressbar.id = "progress-"+filename;
+            divProgressbar.id = "progress-" + filename;
         } else {
             divProgressbar.classList.add("progress-bar", "bg-success", "progress-bar-striped", "progress-bar-animated")
             divProgressbar.style.width = "1%"
-            divProgressbar.id = "progress-"+filename;
+            divProgressbar.id = "progress-" + filename;
         }
 
         divProgress.appendChild(divProgressbar);
         let pError = document.createElement('p');
         pError.classList.add('error');
-        pError.id = 'error-'+filename;
+        pError.id = 'error-' + filename;
 
         divFile.append(divFileName, divProgress, pError)
 
@@ -934,18 +954,18 @@
 
     function shortenFilename(filename, length) {
         let split = filename.split('.');
-        let extension = split[split.length-1];
+        let extension = split[split.length - 1];
         let shortenedName = split[0].substring(0, length);
         return shortenedName + "... ." + extension;
     }
 
     function setProgressbarStyleComplete(progressbar) {
-        progressbar.classList.remove('progress-bar-striped','progress-bar-animated');
+        progressbar.classList.remove('progress-bar-striped', 'progress-bar-animated');
         progressbar.style.width = "100%"
     }
 
     function setProgressbarStyleError(progressbar) {
-        progressbar.className =""
+        progressbar.className = ""
         progressbar.classList.add('progress-bar', 'bg-danger');
         progressbar.style.width = "1%"
     }
@@ -976,8 +996,8 @@
         document.getElementById('nrFiles').innerText = fileList.length;
     }
 
-    function validateTitle(){
-        if (!title || title.trim() === ""){
+    function validateTitle() {
+        if (!title || title.trim() === "") {
             document.getElementById('form').classList.add('was-validated');
             return false;
         }
@@ -985,14 +1005,14 @@
         return true;
     }
 
-    function toggleTooltip(){
+    function toggleTooltip() {
         const tooltip = document.getElementById('tooltip');
         tooltip.style.display = tooltip.style.display === 'none' ? 'block' : 'none';
     }
 
-    function getItemId(){
+    function getItemId() {
         const split = thingiverseItemUrl.split(':')
-        return  split[split.length-1]
+        return split[split.length - 1]
     }
 
     /* === init Plugin === */
@@ -1000,7 +1020,7 @@
     let failedUploads = [];
     let cloudinaryFiles = [];
     let titleImage;
-    let altDescription ="";
+    let altDescription = "";
     let title = "";
     let category = "Learning";
     let description = "";
@@ -1014,9 +1034,15 @@
 
 </script>
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
 
 </body>
 </html>
