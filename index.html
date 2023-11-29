@@ -804,6 +804,7 @@
         formData.append('file', file);
 
         let xhr = new XMLHttpRequest();
+        xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
         xhr.open('POST', url, true);
         xhr.upload.onprogress = (evt) => {
             if (evt.lengthComputable) {
