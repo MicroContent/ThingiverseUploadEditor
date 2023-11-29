@@ -585,6 +585,8 @@
 
         if (!itemId) return; // Guard: could not create item
 
+        publishThingiverseItem(itemId);
+
         for (const file of files) {
             if (isEdit && !file.name) continue; // file already uploaded
 
@@ -675,8 +677,34 @@
         }
     }
 
+    function publishThingiverseItem(itemId) {
+        if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
+            setErrorMaxFile("Status 401: Upload can not be completed at this moment. Please inform your system administrator.");
+            console.log("Missing credentials");
+            return;
+        } else if (!itemId) {
+            console.log("no Item ID provided.");
+            return;
+        }
+
+        const url = `https://api.thingiverse.com/things/${itemId}/publish`;
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', url, false);
+        xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        xhr.setRequestHeader('Authorization', 'Bearer ' + thingiverse);
+        xhr.send();
+
+        if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+            console.log("thing published: " + itemId);
+        } else {
+            console.log("An issue occurred during publishing of a thing:");
+            console.log(xhr.response)
+        }
+    }
+
     function patchThingiverseItem(itemId) {
         if (thingiverse === undefined || thingiverse === null || thingiverse === "") {
+            setErrorMaxFile("Status 401: Upload can not be completed at this moment. Please inform your system administrator.");
             console.log("Missing credentials");
             return;
         } else if (!itemId) {
