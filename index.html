@@ -532,8 +532,8 @@
         if (!file) {
             setErrorMaxFile("Oops! Something went wrong.")
             return false;
-        } else if (fileList.length >= 50) {
-            setErrorMaxFile("You can only upload a maximum of 50 files!")
+        } else if (fileList.length >= 80) {
+            setErrorMaxFile("You can only upload a maximum of 80 files!")
             return false;
         } else if (!checkIfValidFileFormat(file.name)) {
             setErrorMsgFormat(`${file.name}: not a valid file format\n`)
