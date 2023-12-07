@@ -805,7 +805,6 @@
 
         let xhr = new XMLHttpRequest();
         xhr.open('POST', url, true);
-        xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
         xhr.upload.onprogress = (evt) => {
             if (evt.lengthComputable) {
                 const progressbar = document.getElementById(`progress-${file.name}`);
