@@ -573,28 +573,28 @@
     function uploadFiles(files) {
         if (!validateTitle()) return; // Guard: no title
 
-        let itemId;
 
-        if (isEdit) {
+
+        if (isEdit || thingiverseItemId != null) {
             const urlComps = thingiverseItemUrl.split(":")
-            itemId = urlComps[urlComps.length - 1];
+            thingiverseItemId = urlComps[urlComps.length - 1];
             patchThingiverseItem(itemId);
         } else {
-            itemId = createThingiverseItem();
+            thingiverseItemId = createThingiverseItem();
         }
 
-        if (!itemId) return; // Guard: could not create item
+        if (!thingiverseItemId) return; // Guard: could not create item
 
         for (const file of files) {
             if (isEdit && !file.name) continue; // file already uploaded
 
             if (checkIfThingiverseFile(file.name)) {
-                uploadFile(file, itemId)
+                uploadFile(file, thingiverseItemId)
 
             }
         }
 
-        publishThingiverseItem(itemId);
+        setTimeout(() => publishThingiverseItem(thingiverseItemId), 2000);
     }
 
     async function uploadFile(file, itemId) {
@@ -1055,6 +1055,7 @@
     let instructions = "";
     let thingiverse;
     let thingiverseItemUrl = "";
+    let thingiverseItemId;
     let thingiverseIdMap = []; // {name: test.jpg, id: 123}
     let isEdit = false;
 
