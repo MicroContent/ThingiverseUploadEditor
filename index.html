@@ -790,7 +790,7 @@
      */
     async function createFileAws(awsInfo, file) {
         const url = awsInfo.action;
-        const corsUrl = "https://corsproxy.io/?" + encodeURIComponent(url)
+        const corsUrl = 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url)
 
         let formData = new FormData();
         formData.append('AWSAccessKeyId', awsInfo.fields.AWSAccessKeyId);
