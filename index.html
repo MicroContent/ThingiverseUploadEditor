@@ -790,6 +790,7 @@
      */
     async function createFileAws(awsInfo, file) {
         const url = awsInfo.action;
+        const corsUrl = "https://corsproxy.io/?" + encodeURIComponent(url)
 
         let formData = new FormData();
         formData.append('AWSAccessKeyId', awsInfo.fields.AWSAccessKeyId);
@@ -804,7 +805,7 @@
         formData.append('file', file);
 
         let xhr = new XMLHttpRequest();
-        xhr.open('POST', url, true);
+        xhr.open('POST', corsUrl, true);
         xhr.upload.onprogress = (evt) => {
             if (evt.lengthComputable) {
                 const progressbar = document.getElementById(`progress-${file.name}`);
